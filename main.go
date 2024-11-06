@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"git_clone/gvc"
 	"os"
+	"strings"
+
+	"github.com/fatih/color"
 )
 
 func main() {
@@ -43,20 +46,25 @@ func main() {
 
 	switch os.Args[1] {
 	case "add":
-
+		addCmd.Parse(os.Args[2:])
 		// Check that at least one file path is provided after flags
-		if addCmd.NArg() < 1 {
+		if len(addCmd.Args()) < 1 {
 			fmt.Println("expected file paths to add")
+			fmt.Printf("\n %s \n", os.Args)
+			fmt.Printf("\n %s \n", addCmd.Args())
 			os.Exit(1)
 		}
 
 		// Loop over each file path provided after "add"
 		for _, filePath := range addCmd.Args() {
-			err := gvc.AddFile(repoDir, filePath, *force) // Capitalize AddFile to make it accessible
-			if err != nil {
-				fmt.Printf("could not add file %s: %v\n", filePath, err)
-			} else {
-				fmt.Printf("added file %s successfully\n", filePath)
+			messages := gvc.AddFiles(repoDir, filePath, *force)
+
+			for _, message := range messages {
+				if strings.HasPrefix(message, "added") {
+					color.Green(message)
+				} else {
+					color.Red(message)
+				}
 			}
 		}
 	default:

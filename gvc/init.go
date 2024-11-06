@@ -27,6 +27,9 @@ func InitGVC() error {
 		return fmt.Errorf("failed to create directory %s: %w", objetsPath, err)
 	}
 
+	inital_metdata := CurrentBranchPointer{ParentCommitHash: "none", BranchName: "main"}
+	SaveCurrentBranchInfo(filepath.Join(OWN_FOLDER_NAME, CurrentInfoFile), inital_metdata)
+
 	fmt.Println("Initialized a new repository at", OWN_FOLDER_NAME)
 	return nil
 }

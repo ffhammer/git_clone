@@ -1,62 +1,13 @@
 package gvc
 
 import (
-	"compress/gzip"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func addFileToObjects(repoDir string, filename string, fileHash string) error {
-	// Create the subdirectory using the first two characters of the hash
-	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
-
-	if err := mkdirIgnoreExists(subdir); err != nil {
-		return fmt.Errorf("error creating subdir %s: %w", subdir, err)
-	}
-
-	// Define the full path where the compressed file will be saved
-	objectFilePath := filepath.Join(subdir, fileHash)
-
-	// Check if the file already exists
-	if _, err := os.Stat(objectFilePath); err == nil {
-		// File already exists, so return nil indicating no error (or you could return a specific error)
-		return nil
-	} else if !os.IsNotExist(err) {
-		// If there's an error other than "file does not exist," return it
-		return fmt.Errorf("error checking file %s: %w", objectFilePath, err)
-	}
-
-	// Open the source file to read its content
-	sourceFile, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("error opening source file %s: %w", filename, err)
-	}
-	defer sourceFile.Close()
-
-	// Create the destination file (compressed)
-	destFile, err := os.Create(objectFilePath)
-	if err != nil {
-		return fmt.Errorf("error creating object file %s: %w", objectFilePath, err)
-	}
-	defer destFile.Close()
-
-	// Compress the content and write it to the destination file
-	gzipWriter := gzip.NewWriter(destFile)
-	defer gzipWriter.Close()
-
-	// Copy the content from the source file to the gzip writer
-	if _, err := io.Copy(gzipWriter, sourceFile); err != nil {
-		return fmt.Errorf("error compressing content: %w", err)
-	}
-
-	return nil
-}
-
-func AddFile(repoDir string, filePath string, force bool) error {
-
-	// place we store things we added but have yet to commit
+func addSingleFile(repoDir string, filePath string, force bool) error {
 	next_commit := filepath.Join(repoDir, NEXT_COMMIT)
 
 	mkdirIgnoreExists(next_commit)
@@ -90,4 +41,58 @@ func AddFile(repoDir string, filePath string, force bool) error {
 	}
 
 	return nil
+}
+
+func AddFiles(repoDir string, filePath string, force bool) []string {
+	var files []string
+	var messages []string
+
+	// Check if the filePath is a directory
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		messages = append(messages, fmt.Sprintf("could not access %s: %v", filePath, err))
+		return messages
+	}
+
+	if fileInfo.IsDir() {
+		// Add all files in the directory recursively
+		err = filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				messages = append(messages, fmt.Sprintf("error accessing %s: %v", path, err))
+				return nil
+			}
+			// Only add regular files (not subdirectories)
+			if !info.IsDir() {
+				files = append(files, path)
+			}
+			return nil
+		})
+		if err != nil {
+			messages = append(messages, fmt.Sprintf("error walking directory %s: %v", filePath, err))
+			return messages
+		}
+	} else if strings.ContainsAny(filePath, "*?") {
+		// Handle glob pattern
+		globMatches, err := filepath.Glob(filePath)
+		if err != nil {
+			messages = append(messages, fmt.Sprintf("error processing glob pattern %s: %v", filePath, err))
+			return messages
+		}
+		files = append(files, globMatches...)
+	} else {
+		// Single file path, add directly
+		files = append(files, filePath)
+	}
+
+	// Add each file using addSingleFile
+	for _, file := range files {
+		err := addSingleFile(repoDir, file, force)
+		if err != nil {
+			messages = append(messages, fmt.Sprintf("could not add file %s: %v", file, err))
+		} else {
+			messages = append(messages, fmt.Sprintf("added file %s", file))
+		}
+	}
+
+	return messages
 }

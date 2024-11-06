@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"sync"
+
+	"github.com/gobwas/glob"
 )
 
 var (
@@ -30,7 +32,7 @@ func getIgnorePatterns(repoPath string) []string {
 }
 
 func parseIgnoreFile(repoPath string) ([]string, error) {
-	ignoreFilePath := filepath.Join(repoPath, IGNORE_PATH)
+	ignoreFilePath := filepath.Join(filepath.Dir(repoPath), IGNORE_PATH)
 
 	// Check if the ignore file exists
 	if _, err := os.Stat(ignoreFilePath); os.IsNotExist(err) {
@@ -95,32 +97,19 @@ func isInIgnoreFile(relPath string, repoPath string) bool {
 	parts := splitPath(relPath)
 
 	for _, pattern := range ignorePatterns {
-		// Debug log: Show the pattern and path we're working with
-		fmt.Printf("Checking pattern: %s\n", pattern)
 
 		// Handle glob patterns (e.g., "*.log" or "dir/*")
 		if strings.ContainsAny(pattern, "*?") {
-			fmt.Printf("Pattern %s is a glob pattern, attempting match with %s\n", pattern, relPath)
 
-			// Use filepath.Match for glob patterns
-			matched, err := filepath.Match(pattern, relPath)
-			if err != nil {
-				fmt.Printf("Error matching pattern %s: %v\n", pattern, err)
-				continue
-			}
-			if matched {
-				fmt.Printf("Pattern %s matched with %s\n", pattern, relPath)
+			g := glob.MustCompile(pattern)
+			if g.Match(relPath) {
 				return true
 			}
 			continue
 		}
 
-		// Handle exact directory or file pattern matches
-		patternPath := filepath.Clean(filepath.Join(repoPath, pattern)) // Construct absolute path for pattern
-		fmt.Printf("Non-glob pattern detected. Pattern: %s, Pattern Path: %s\n", pattern, patternPath)
-
 		// Split pattern path to match components
-		patternParts := splitPath(patternPath)
+		patternParts := splitPath(pattern)
 		if len(parts) < len(patternParts) {
 			// relPath is shorter than the pattern path, so it can't match
 			continue
@@ -135,7 +124,6 @@ func isInIgnoreFile(relPath string, repoPath string) bool {
 			}
 		}
 		if matches {
-			fmt.Printf("Exact match for pattern path %s with %s\n", patternPath, relPath)
 			return true
 		}
 	}

@@ -7,6 +7,54 @@ import (
 	"path/filepath"
 )
 
+func getPathToHashMap(treePath string) (map[string]string, error) {
+	// Check if the file exists
+	if _, err := os.Stat(treePath); err != nil {
+		return nil, fmt.Errorf("could not find parent commit tree at %s: %w", treePath, err)
+	}
+
+	// Read the file data
+	file, err := os.OpenFile(treePath, os.O_RDWR, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file %s: %w", treePath, err)
+	}
+
+	// Parse the CSV data
+	r := csv.NewReader(file)
+	r.TrimLeadingSpace = true
+
+	// Read the CSV header
+	headers, err := r.Read()
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CSV headers: %w", err)
+	}
+	if len(headers) < 2 || headers[0] != "relPath" || headers[1] != "fileHash" {
+		return nil, fmt.Errorf("invalid CSV format in file %s", treePath)
+	}
+
+	pathToHash := make(map[string]string)
+
+	// Read and parse each line into the map
+	for {
+		record, err := r.Read()
+		if err != nil {
+			if err.Error() == "EOF" {
+				break // End of file, stop reading
+			}
+			return nil, fmt.Errorf("failed to read CSV line: %w", err)
+		}
+
+		if len(record) < 2 {
+			continue // Skip lines that don't have enough columns
+		}
+		relPath := record[0]
+		fileHash := record[1]
+		pathToHash[relPath] = fileHash
+	}
+
+	return pathToHash, nil
+}
+
 func fileTableExistsOrCreate(tablePath string) error {
 	if _, err := os.Stat(tablePath); err == nil {
 		return nil
