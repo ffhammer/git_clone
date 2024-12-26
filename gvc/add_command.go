@@ -25,7 +25,7 @@ func addSingleFile(repoDir string, filePath string, force bool) error {
 		return fmt.Errorf("file %s is ignored. Use add -f to force it", filePath)
 	}
 
-	fileHash, err := getFileSHA256(filePath)
+	fileHash, err := getFileSHA1(filePath)
 	if err != nil {
 		return fmt.Errorf("can't add file %s to objects because %w", filePath, err)
 

@@ -5,6 +5,6 @@ const (
 	IGNORE_PATH     = ".gvcignore"
 	COMMITS_FOLDER  = "commits"
 	OBJECT_FOLDER   = "objects"
-	NEXT_COMMIT     = "current_changes"
+	NEXT_COMMIT     = "index"
 	FILE_TABLE      = "tree.txt"
 )

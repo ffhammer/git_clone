@@ -1,7 +1,7 @@
 package gvc
 
 import (
-	"crypto/sha256"
+	"crypto/sha1"
 	"errors"
 	"fmt"
 	"io"
@@ -43,14 +43,14 @@ func makePathRelativeToRepo(repoDir string, filePath string) (string, error) {
 	return filepath.Clean(relPath), nil
 }
 
-func getFileSHA256(filePath string) (string, error) {
+func getFileSHA1(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("error opening file: %w", err)
 	}
 	defer file.Close()
 
-	hasher := sha256.New()
+	hasher := sha1.New()
 
 	if _, err := io.Copy(hasher, file); err != nil {
 		return "", fmt.Errorf("error reading file content: %w", err)
@@ -61,8 +61,8 @@ func getFileSHA256(filePath string) (string, error) {
 	return fmt.Sprintf("%x", hashSum), nil
 }
 
-func getStringSHA256(s string) string {
-	h := sha256.New()
+func getStringSHA1(s string) string {
+	h := sha1.New()
 
 	h.Write([]byte(s))
 

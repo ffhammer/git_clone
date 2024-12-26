@@ -17,7 +17,7 @@ func addFileToObjects(repoDir string, filename string, fileHash string) error {
 	}
 
 	// Define the full path where the compressed file will be saved
-	objectFilePath := filepath.Join(subdir, fileHash)
+	objectFilePath := filepath.Join(subdir, fileHash[2:])
 
 	// Check if the file already exists
 	if _, err := os.Stat(objectFilePath); err == nil {
@@ -56,7 +56,7 @@ func addFileToObjects(repoDir string, filename string, fileHash string) error {
 
 func retrieveObject(repoDir string, fileHash string) (string, error) {
 	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
-	objectFilePath := filepath.Join(subdir, fileHash)
+	objectFilePath := filepath.Join(subdir, fileHash[2:])
 
 	if _, err := os.Stat(objectFilePath); os.IsExist(err) {
 		return "", fmt.Errorf("Cant find object file %s: %w", objectFilePath, err)
