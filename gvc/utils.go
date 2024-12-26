@@ -68,25 +68,3 @@ func getStringSHA1(s string) string {
 
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
-
-func FindRepo() (string, error) {
-	// Get the current working directory
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("error finding cwd: %w", err)
-	}
-
-	for {
-		repoPath := filepath.Join(cwd, OWN_FOLDER_NAME)
-		if _, err := os.Stat(repoPath); err == nil {
-			return repoPath, nil
-		}
-
-		parentDir := filepath.Dir(cwd)
-		if parentDir == cwd {
-			return "", errors.New("repository folder not found")
-		}
-
-		cwd = parentDir
-	}
-}

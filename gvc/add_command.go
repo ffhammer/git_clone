@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func addSingleFile(repoDir string, filePath string, force bool) error {
+func addSingleFile(filePath string, force bool) error {
 	next_commit := filepath.Join(repoDir, NEXT_COMMIT)
 
 	mkdirIgnoreExists(next_commit)
@@ -31,7 +31,7 @@ func addSingleFile(repoDir string, filePath string, force bool) error {
 
 	}
 
-	err = addFileToObjects(repoDir, filePath, fileHash)
+	err = addFileToObjects(filePath, fileHash)
 	if err != nil {
 		return fmt.Errorf("can't add file %s to objects because %w", filePath, err)
 	}
@@ -43,7 +43,7 @@ func addSingleFile(repoDir string, filePath string, force bool) error {
 	return nil
 }
 
-func AddFiles(repoDir string, filePath string, force bool) []string {
+func AddFiles(filePath string, force bool) []string {
 	var files []string
 	var messages []string
 
@@ -86,7 +86,7 @@ func AddFiles(repoDir string, filePath string, force bool) []string {
 
 	// Add each file using addSingleFile
 	for _, file := range files {
-		err := addSingleFile(repoDir, file, force)
+		err := addSingleFile(file, force)
 		if err != nil {
 			messages = append(messages, fmt.Sprintf("could not add file %s: %v", file, err))
 		} else {

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-func addFileToObjects(repoDir string, filename string, fileHash string) error {
+func addFileToObjects(filename string, fileHash string) error {
 	// Create the subdirectory using the first two characters of the hash
 	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
 
@@ -54,7 +54,7 @@ func addFileToObjects(repoDir string, filename string, fileHash string) error {
 	return nil
 }
 
-func retrieveObject(repoDir string, fileHash string) (string, error) {
+func retrieveObject(fileHash string) (string, error) {
 	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
 	objectFilePath := filepath.Join(subdir, fileHash[2:])
 

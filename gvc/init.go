@@ -8,9 +8,9 @@ import (
 
 func InitGVC() error {
 	// Check if the repository already exists
-	repoPath, err := FindRepo()
+	err := FindRepo()
 	if err == nil {
-		return fmt.Errorf("repository already exists at %s", repoPath)
+		return fmt.Errorf("repository already exists at %s", repoDir)
 	}
 
 	if err := os.Mkdir(OWN_FOLDER_NAME, os.ModePerm); err != nil {
