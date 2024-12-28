@@ -38,14 +38,13 @@ func getTraces(a, b []string) [][]int {
 	traces := make([][]int, 0, max_s)
 	current_v := make([]int, N_DIA)
 
-	for d := 0; d < max_s; d++ {
+	for d := 0; d < max_s+1; d++ {
 		next_v := make([]int, len(current_v))
 		copy(next_v, current_v)
 		traces = append(traces, next_v)
 
 		for k := -d; k <= d; k += 2 {
 			var x, y int
-
 			if k == -d || (k != d && current_v[index_around(k-1, N_DIA)] < current_v[index_around(k+1, N_DIA)]) {
 				x = current_v[index_around(k+1, N_DIA)]
 			} else {
@@ -57,7 +56,7 @@ func getTraces(a, b []string) [][]int {
 				y++
 			}
 
-			current_v[index_around(x, N_DIA)] = x
+			current_v[index_around(k, N_DIA)] = x
 
 			if x >= N && y >= M {
 				return traces
@@ -100,12 +99,14 @@ func backtrack(traces [][]int, a, b []string) []LineChange {
 		if d > 0 {
 			changes = append(changes, Tup4{prev_x, prev_y, x, y})
 		}
+		x = prev_x
+		y = prev_y
 	}
 
+	// Generate LineChange results
 	result := make([]LineChange, len(changes))
 	for i := 0; i < len(changes); i++ {
-		change := changes[len(changes)-1-i]
-		fmt.Print(i)
+		change := changes[len(changes)-1-i] // Reverse changes order
 		if change.old_x == change.x {
 			result[i] = LineChange{Insert, -1, change.y}
 		} else if change.old_y == change.y {
@@ -119,20 +120,19 @@ func backtrack(traces [][]int, a, b []string) []LineChange {
 }
 
 func DiffPrinter(oldText, newText string, changes []LineChange, writer io.Writer) {
-	// Define colors
 	oldLines := SplitLines(oldText)
 	newLines := SplitLines(newText)
 
 	for _, change := range changes {
 		switch change.action {
 		case Insert:
-			line := fmt.Sprintf("%s    %s\n", "+", newLines[change.newLineNumber])
+			line := fmt.Sprintf("+ %s\n", newLines[change.newLineNumber])
 			fmt.Fprint(writer, color.New(color.FgGreen).Sprint(line))
 		case Delete:
-			line := fmt.Sprintf("%s    %s\n", "-", oldLines[change.oldLineNumber])
+			line := fmt.Sprintf("- %s\n", oldLines[change.oldLineNumber])
 			fmt.Fprint(writer, color.New(color.FgRed).Sprint(line))
 		case Keep:
-			line := fmt.Sprintf("%s    %s\n", " ", oldLines[change.oldLineNumber])
+			line := fmt.Sprintf("  %s\n", oldLines[change.oldLineNumber])
 			fmt.Fprint(writer, color.New(color.FgWhite).Sprint(line))
 		}
 	}

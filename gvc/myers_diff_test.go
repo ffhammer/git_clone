@@ -47,10 +47,6 @@ func TestMyersDiffExamples(t *testing.T) {
 
 			// fmt.Println("\nDiff Output:")
 			// DiffPrinter(changes, os.Stdout)
-			fmt.Print("\n=== changes ===\n\n")
-			for _, change := range changes {
-				fmt.Printf("%d - %d - %d\n", change.action, change.oldLineNumber, change.newLineNumber)
-			}
 			// Optionally capture the diff into a buffer for testing
 			var buf bytes.Buffer
 			DiffPrinter(example.a, example.b, changes, &buf)
