@@ -52,7 +52,7 @@ func LoadCurrentPointer() (CurrentBranchPointer, error) {
 	return metadata, nil
 }
 
-func getLastCommit() (objectio.CommitMetdata, error) {
+func GetLastCommit() (objectio.CommitMetdata, error) {
 
 	branchPointer, err := LoadCurrentPointer()
 	if err != nil {
@@ -60,4 +60,12 @@ func getLastCommit() (objectio.CommitMetdata, error) {
 	}
 	return objectio.LoadCommit(branchPointer.BranchName)
 
+}
+
+func GetLastCommitsTree() (objectio.TreeMap, error) {
+	lastCommit, err := GetLastCommit()
+	if err != nil {
+		return objectio.TreeMap{}, err
+	}
+	return objectio.LoadTree(lastCommit.TreeHash)
 }

@@ -1,17 +1,27 @@
 package index
 
 import (
+	"fmt"
+	"git_clone/gvc/pointers"
 	"time"
 )
 
 type ChangeAction string
 
 const (
-	Add      ChangeAction = "add"
-	Modify   ChangeAction = "modify"
-	Delete   ChangeAction = "delete"
-	Stash    ChangeAction = "stash"
-	Unmerged ChangeAction = "unmerged"
+	Add    ChangeAction = "add"
+	Modify ChangeAction = "modify"
+	Delete ChangeAction = "delete"
+	// Stash    ChangeAction = "stash"
+	// Unmerged ChangeAction = "unmerged"
+)
+
+type fileStatus string
+
+const (
+	UNCHANGE_FILE fileStatus = "unchanged"
+	NEW_FILE      fileStatus = "new"
+	MODIFIED_FILE fileStatus = "delete"
 )
 
 type ChangeEntry struct {
@@ -23,25 +33,67 @@ type ChangeEntry struct {
 
 type ChangeMap map[string]ChangeEntry
 
+func partOfLastCommit(relPath, fileHash string) (fileStatus, error) {
+
+	treeMap, err := pointers.GetLastCommitsTree()
+	if err != nil {
+		return NEW_FILE, err
+	}
+
+	val, ok := treeMap[relPath]
+
+	if !ok {
+		return NEW_FILE, nil
+	}
+
+	if val.FileHash == fileHash {
+		return UNCHANGE_FILE, nil
+	}
+
+	return MODIFIED_FILE, nil
+}
+
 func AddFile(relPath, fileHash string) error {
-	// noch problematiscsh
 	changes, err := loadIndexChanges()
 	if err != nil {
 		return err
 	}
 
-	newEntry := ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Add}
+	status, err := partOfLastCommit(relPath, fileHash)
+	if err != nil {
+		return err
+	}
+
+	var newEntry ChangeEntry
+	if status == MODIFIED_FILE {
+		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Modify}
+	} else if status == NEW_FILE {
+		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Add}
+	} else { // in case of neither added nor modifed -> do nothing
+		return nil
+	}
+
 	changes[relPath] = newEntry
 
 	return saveIndexChanges(changes)
 
 }
 
-func DeleteFile(relPath, fileHash string) error {
-
+func DeleteFile(relPath, fileHash string, cached bool) error {
+	// actual deletion is still missing
 	changes, err := loadIndexChanges()
 	if err != nil {
 		return err
+	}
+
+	status, err := partOfLastCommit(relPath, fileHash)
+	if err != nil {
+		return err
+	}
+
+	// if file does not exist
+	if status == NEW_FILE {
+		return fmt.Errorf("file %s was never tracked, hence cant be deleted", relPath)
 	}
 
 	newEntry := ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Delete}
