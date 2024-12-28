@@ -6,7 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"git_clone/gvc"
+	"git_clone/gvc/commands"
+	"git_clone/gvc/utils"
 
 	"github.com/fatih/color"
 )
@@ -36,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := gvc.FindRepo(); os.Args[1] != "init" && err != nil {
+	if err := utils.FindRepo(); os.Args[1] != "init" && err != nil {
 		fmt.Println("fatal: not a gvc repository (or any of the parent directories): .gvc")
 		os.Exit(1)
 	}
@@ -45,7 +46,7 @@ func main() {
 	switch os.Args[1] {
 	case "init":
 		initCmd.Parse(os.Args[2:])
-		err := gvc.InitGVC()
+		err := commands.InitGVC()
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
@@ -59,7 +60,7 @@ func main() {
 			os.Exit(1)
 		}
 		for _, filePath := range addCmd.Args() {
-			messages := gvc.AddFiles(filePath, *force)
+			messages := commands.AddFiles(filePath, *force)
 			for _, message := range messages {
 				if strings.HasPrefix(message, "added") {
 					color.Green(message)

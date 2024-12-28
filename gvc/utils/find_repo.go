@@ -1,14 +1,15 @@
-package gvc
+package utils
 
 import (
 	"errors"
 	"fmt"
+	"git_clone/gvc/config"
 	"os"
 	"path/filepath"
 )
 
 var (
-	repoDir string
+	RepoDIr string
 )
 
 func FindRepo() error {
@@ -20,9 +21,9 @@ func FindRepo() error {
 	}
 
 	for {
-		repoPath := filepath.Join(cwd, OWN_FOLDER_NAME)
+		repoPath := filepath.Join(cwd, config.OWN_FOLDER_NAME)
 		if _, err := os.Stat(repoPath); err == nil {
-			repoDir = repoPath
+			RepoDIr = repoPath
 			return nil
 		}
 

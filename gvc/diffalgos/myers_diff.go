@@ -1,7 +1,8 @@
-package gvc
+package diffalgos
 
 import (
 	"fmt"
+	"git_clone/gvc/utils"
 	"io"
 
 	"github.com/fatih/color"
@@ -120,8 +121,8 @@ func backtrack(traces [][]int, a, b []string) []LineChange {
 }
 
 func DiffPrinter(oldText, newText string, changes []LineChange, writer io.Writer) {
-	oldLines := SplitLines(oldText)
-	newLines := SplitLines(newText)
+	oldLines := utils.SplitLines(oldText)
+	newLines := utils.SplitLines(newText)
 
 	for _, change := range changes {
 		switch change.action {

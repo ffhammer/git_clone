@@ -1,8 +1,9 @@
-package gvc
+package diffalgos
 
 import (
 	"bytes"
 	"fmt"
+	"git_clone/gvc/utils"
 	"testing"
 )
 
@@ -38,7 +39,7 @@ func TestMyersDiffExamples(t *testing.T) {
 	for _, example := range examples {
 		t.Run(example.name, func(t *testing.T) {
 			// Compute the diff
-			changes := MyersDiff(SplitLines(example.a), SplitLines(example.b))
+			changes := MyersDiff(utils.SplitLines(example.a), utils.SplitLines(example.b))
 
 			// Print the diff to stdout
 			fmt.Printf("\n=== %s ===\n\n", example.name)

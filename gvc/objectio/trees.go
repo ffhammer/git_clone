@@ -1,4 +1,4 @@
-package gvc
+package objectio
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 )
 
 type treeEntry struct {
-	relPath  string `json:"relpath"`
-	fileHash string `json:"filehash"`
+	RelPath  string `json:"relpath"`
+	FileHash string `json:"filehash"`
 }
 
 type TreeMap map[string]treeEntry
@@ -32,7 +32,7 @@ func saveTree(tree TreeMap, fileHash string) error {
 	}
 
 	// Save the serialized tree as an object
-	return saveObject(fileHash, reader)
+	return SaveObject(fileHash, reader)
 }
 func deserializeTreeMap(data []byte) (TreeMap, error) {
 	var tree TreeMap
@@ -45,7 +45,7 @@ func deserializeTreeMap(data []byte) (TreeMap, error) {
 
 func loadTree(fileHash string) (TreeMap, error) {
 	// Load the serialized tree object
-	data, err := loadObject(fileHash)
+	data, err := LoadObject(fileHash)
 	if err != nil {
 		return nil, fmt.Errorf("error loading tree object: %w", err)
 	}

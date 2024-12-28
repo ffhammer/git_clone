@@ -1,42 +1,47 @@
-package gvc
+package commands
 
 import (
 	"fmt"
+	"git_clone/gvc/config"
+	"git_clone/gvc/ignorefiles"
+	"git_clone/gvc/index"
+	"git_clone/gvc/objectio"
+	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 func addSingleFile(filePath string, force bool) error {
-	next_commit := filepath.Join(repoDir, NEXT_COMMIT)
+	next_commit := filepath.Join(utils.RepoDIr, config.NEXT_COMMIT)
 
-	mkdirIgnoreExists(next_commit)
+	utils.MkdirIgnoreExists(next_commit)
 
 	if _, err := os.Stat(filePath); err != nil {
 		return fmt.Errorf("can't find file %s: %w", filePath, err)
 	}
 
-	relPath, err := makePathRelativeToRepo(repoDir, filePath)
+	relPath, err := utils.MakePathRelativeToRepo(utils.RepoDIr, filePath)
 	if err != nil {
 		return err
 	}
 
-	if isInIgnoreFile(relPath, repoDir) && !force {
+	if ignorefiles.IsIgnored(relPath) && !force {
 		return fmt.Errorf("file %s is ignored. Use add -f to force it", filePath)
 	}
 
-	fileHash, err := getFileSHA1(filePath)
+	fileHash, err := utils.GetFileSHA1(filePath)
 	if err != nil {
 		return fmt.Errorf("can't add file %s to objects because %w", filePath, err)
 
 	}
 
-	err = addFileToObjects(filePath, fileHash)
+	err = objectio.AddFileToObjects(filePath, fileHash)
 	if err != nil {
 		return fmt.Errorf("can't add file %s to objects because %w", filePath, err)
 	}
 
-	if err := addToSavedFilesTable(next_commit, relPath, fileHash); err != nil {
+	if err := index.AddFile(relPath, fileHash); err != nil {
 		return err
 	}
 

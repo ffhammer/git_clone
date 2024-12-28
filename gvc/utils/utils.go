@@ -1,4 +1,4 @@
-package gvc
+package utils
 
 import (
 	"bufio"
@@ -8,20 +8,45 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
-// mkdirIgnoreExists creates a directory if it doesn't already exist
-func mkdirIgnoreExists(path string) error {
+func MkdirIgnoreExists(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return os.Mkdir(path, os.ModePerm)
 	}
 	return nil
 }
 
-func makePathRelativeToRepo(repoDir string, filePath string) (string, error) {
+func SplitPath(path string) []string {
+	subPath := path
+	var result []string
+	for {
+		subPath = filepath.Clean(subPath) // Amongst others, removes trailing slashes (except for the root directory).
 
-	absRepoDir, err := filepath.Abs(filepath.Dir(repoDir))
+		dir, last := filepath.Split(subPath)
+		if last == "" {
+			if dir != "" { // Root directory.
+				result = append(result, dir)
+			}
+			break
+		}
+		result = append(result, last)
+
+		if dir == "" { // Nothing to split anymore.
+			break
+		}
+		subPath = dir
+	}
+
+	slices.Reverse(result)
+	return result
+}
+
+func MakePathRelativeToRepo(RepoDIr string, filePath string) (string, error) {
+
+	absRepoDir, err := filepath.Abs(filepath.Dir(RepoDIr))
 	if err != nil {
 		return "", fmt.Errorf("error getting absolute path of repository: %w", err)
 	}
@@ -36,7 +61,7 @@ func makePathRelativeToRepo(repoDir string, filePath string) (string, error) {
 		return "", errors.New("file is outside of the repository directory")
 	}
 
-	// Return the relative path of filePath from repoDir
+	// Return the relative path of filePath from RepoDIr
 	relPath, err := filepath.Rel(absRepoDir, absFilePath)
 	if err != nil {
 		return "", fmt.Errorf("error computing relative path: %w", err)
@@ -45,7 +70,7 @@ func makePathRelativeToRepo(repoDir string, filePath string) (string, error) {
 	return filepath.Clean(relPath), nil
 }
 
-func getFileSHA1(filePath string) (string, error) {
+func GetFileSHA1(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", fmt.Errorf("error opening file: %w", err)
@@ -63,7 +88,7 @@ func getFileSHA1(filePath string) (string, error) {
 	return fmt.Sprintf("%x", hashSum), nil
 }
 
-func getStringSHA1(s string) string {
+func GetStringSHA1(s string) string {
 	h := sha1.New()
 
 	h.Write([]byte(s))

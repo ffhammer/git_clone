@@ -1,18 +1,20 @@
-package gvc
+package objectio
 
 import (
 	"compress/gzip"
 	"fmt"
+	"git_clone/gvc/config"
+	"git_clone/gvc/utils"
 	"io"
 	"os"
 	"path/filepath"
 )
 
-func saveObject(fileHash string, reader io.Reader) error {
+func SaveObject(fileHash string, reader io.Reader) error {
 
-	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
+	subdir := filepath.Join(utils.RepoDIr, config.OBJECT_FOLDER, fileHash[:2])
 
-	if err := mkdirIgnoreExists(subdir); err != nil {
+	if err := utils.MkdirIgnoreExists(subdir); err != nil {
 		return fmt.Errorf("error creating subdir %s: %w", subdir, err)
 	}
 
@@ -42,8 +44,8 @@ func saveObject(fileHash string, reader io.Reader) error {
 	return nil
 }
 
-func loadObject(fileHash string) ([]byte, error) {
-	subdir := filepath.Join(repoDir, OBJECT_FOLDER, fileHash[:2])
+func LoadObject(fileHash string) ([]byte, error) {
+	subdir := filepath.Join(utils.RepoDIr, config.OBJECT_FOLDER, fileHash[:2])
 	objectFilePath := filepath.Join(subdir, fileHash[2:])
 
 	if _, err := os.Stat(objectFilePath); os.IsExist(err) {
@@ -71,7 +73,7 @@ func loadObject(fileHash string) ([]byte, error) {
 	return content, nil
 }
 
-func addFileToObjects(filename string, fileHash string) error {
+func AddFileToObjects(filename string, fileHash string) error {
 	// Create the subdirectory using the first two characters of the hash
 
 	// Open the source file to read its content
@@ -82,12 +84,12 @@ func addFileToObjects(filename string, fileHash string) error {
 	defer sourceFile.Close()
 
 	// Create the destination file (compressed)
-	return saveObject(fileHash, sourceFile)
+	return SaveObject(fileHash, sourceFile)
 }
 
-func retrieveFile(fileHash string) (string, error) {
+func RetrieveFile(fileHash string) (string, error) {
 
-	content, err := loadObject(fileHash)
+	content, err := LoadObject(fileHash)
 	if err != nil {
 		return "", err
 	}

@@ -1,11 +1,12 @@
-package gvc
+package ignorefiles
 
 import (
 	"bufio"
 	"fmt"
+	"git_clone/gvc/config"
+	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 
@@ -32,7 +33,7 @@ func getIgnorePatterns(repoPath string) []string {
 }
 
 func parseIgnoreFile(repoPath string) ([]string, error) {
-	ignoreFilePath := filepath.Join(filepath.Dir(repoPath), IGNORE_PATH)
+	ignoreFilePath := filepath.Join(filepath.Dir(repoPath), config.IGNORE_PATH)
 
 	// Check if the ignore file exists
 	if _, err := os.Stat(ignoreFilePath); os.IsNotExist(err) {
@@ -67,34 +68,14 @@ func parseIgnoreFile(repoPath string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
-func splitPath(path string) []string {
-	subPath := path
-	var result []string
-	for {
-		subPath = filepath.Clean(subPath) // Amongst others, removes trailing slashes (except for the root directory).
-
-		dir, last := filepath.Split(subPath)
-		if last == "" {
-			if dir != "" { // Root directory.
-				result = append(result, dir)
-			}
-			break
-		}
-		result = append(result, last)
-
-		if dir == "" { // Nothing to split anymore.
-			break
-		}
-		subPath = dir
-	}
-
-	slices.Reverse(result)
-	return result
+func IsIgnored(relPath string) bool {
+	// this is there to later also handle nested .gvcingores
+	return isInIgnoreFile(relPath, utils.RepoDIr)
 }
 
 func isInIgnoreFile(relPath string, repoPath string) bool {
 	ignorePatterns := getIgnorePatterns(repoPath)
-	parts := splitPath(relPath)
+	parts := utils.SplitPath(relPath)
 
 	for _, pattern := range ignorePatterns {
 
@@ -109,7 +90,7 @@ func isInIgnoreFile(relPath string, repoPath string) bool {
 		}
 
 		// Split pattern path to match components
-		patternParts := splitPath(pattern)
+		patternParts := utils.SplitPath(pattern)
 		if len(parts) < len(patternParts) {
 			// relPath is shorter than the pattern path, so it can't match
 			continue

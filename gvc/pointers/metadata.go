@@ -1,4 +1,4 @@
-package gvc
+package pointers
 
 import (
 	"encoding/json"
