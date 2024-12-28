@@ -1,7 +1,9 @@
 package objectio
 
 import (
+	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/utils"
@@ -95,4 +97,46 @@ func RetrieveFile(fileHash string) (string, error) {
 	}
 
 	return string(content), nil
+}
+
+func SerializeObject[T any](object T) (io.Reader, error) {
+	// Serialize the object to JSON
+	data, err := json.Marshal(object)
+	if err != nil {
+		return nil, fmt.Errorf("error serializing object: %w", err)
+	}
+
+	// Wrap the JSON data in a bytes.Reader to create an io.Reader
+	return bytes.NewReader(data), nil
+}
+
+func DeserializeObject[T any](data []byte) (T, error) {
+	var object T
+	err := json.Unmarshal(data, &object)
+	if err != nil {
+		return object, fmt.Errorf("error deserializing object: %w", err)
+	}
+	return object, nil
+}
+
+func SaveJsonObject[T any](object T, fileHash string) error {
+	reader, err := SerializeObject(object)
+	if err != nil {
+		return fmt.Errorf("error serializing tree: %w", err)
+	}
+
+	// Save the serialized tree as an object
+	return SaveObject(fileHash, reader)
+}
+
+func LoadJsonObject[T any](fileHash string) (T, error) {
+	// Load the serialized tree object
+	data, err := LoadObject(fileHash)
+	if err != nil {
+		var zero T
+		return zero, fmt.Errorf("error loading tree object: %w", err)
+	}
+
+	// Deserialize the data into a TreeMap
+	return DeserializeObject[T](data)
 }

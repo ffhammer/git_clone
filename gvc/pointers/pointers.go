@@ -3,7 +3,11 @@ package pointers
 import (
 	"encoding/json"
 	"fmt"
+	"git_clone/gvc/config"
+	"git_clone/gvc/objectio"
+	"git_clone/gvc/utils"
 	"os"
+	"path/filepath"
 )
 
 type CurrentBranchPointer struct {
@@ -11,25 +15,25 @@ type CurrentBranchPointer struct {
 	BranchName       string `json:"branch_name"`
 }
 
-const CurrentInfoFile = "current_info" // Define the file name for current info
+func SaveCurrentPointer(metadata CurrentBranchPointer) error {
 
-func SaveCurrentBranchInfo(filePath string, metadata CurrentBranchPointer) error {
+	pathToCurrentPointer := filepath.Join(utils.RepoDIr, config.CurrentBranchPointerFile)
 
 	data, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to serialize commit metadata: %w", err)
 	}
 
-	err = os.WriteFile(filePath, data, 0644)
+	err = os.WriteFile(pathToCurrentPointer, data, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to write commit metadata to file %s: %w", filePath, err)
+		return fmt.Errorf("failed to write commit metadata to file %s: %w", pathToCurrentPointer, err)
 	}
 
 	return nil
 }
 
-func LoadCommitInfo(filePath string) (CurrentBranchPointer, error) {
-
+func LoadCurrentPointer() (CurrentBranchPointer, error) {
+	filePath := filepath.Join(utils.RepoDIr, config.CurrentBranchPointerFile)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return CurrentBranchPointer{}, fmt.Errorf("current info file does not exist at %s", filePath)
 	}
@@ -46,4 +50,14 @@ func LoadCommitInfo(filePath string) (CurrentBranchPointer, error) {
 	}
 
 	return metadata, nil
+}
+
+func getLastCommit() (objectio.CommitMetdata, error) {
+
+	branchPointer, err := LoadCurrentPointer()
+	if err != nil {
+		return objectio.CommitMetdata{}, fmt.Errorf("could not laod current branch pointer %s", err)
+	}
+	return objectio.LoadCommit(branchPointer.BranchName)
+
 }

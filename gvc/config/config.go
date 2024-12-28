@@ -8,7 +8,7 @@ const (
 	NEXT_COMMIT              = "index"
 	INDEX_CHANGES            = "changes.json"
 	FILE_TABLE               = "tree.txt"
-	COMMIT_HASH_NO_COMMIT    = "none"
+	DOES_NOT_EXIST_HASH      = "none"
 	STARTING_BRANCH          = "main"
 	CurrentBranchPointerFile = "current_info"
 )

@@ -1,22 +1,20 @@
 package objectio
 
+import "git_clone/gvc/config"
+
 type CommitMetdata struct {
 	ParentCommitHash string `json:"parent_commit_hash"`
 	BranchName       string `json:"branch_name"`
 	Author           string `json:"author"`
 	CommitMessage    string `json:"commit_message"`
 	Date             string `json:"date"`
+	TreeHash         string `json:"tree_hash"`
 }
 
-// func commit(repoPath string, message string) error {
+func LoadCommit(fileHash string) (CommitMetdata, error) {
+	if fileHash == config.DOES_NOT_EXIST_HASH {
+		return CommitMetdata{TreeHash: config.DOES_NOT_EXIST_HASH}, nil
+	}
 
-// 	changesPath := filepath.Join(RepoDIr, NEXT_COMMIT)
-// 	treePath := changesPath.Join(RepoDIr, FILE_TABLE)
-
-// 	// if treePath not exists or len(treepath) lines < 2 {
-// 	// 	return fmt.Errorf("no changes to commit")
-// 	// }
-
-// 	return nil
-
-// }
+	return LoadJsonObject[CommitMetdata](fileHash)
+}
