@@ -36,6 +36,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := gvc.FindRepo(); os.Args[1] != "init" && err != nil {
+		fmt.Println("fatal: not a gvc repository (or any of the parent directories): .gvc")
+		os.Exit(1)
+	}
+
 	// Handle subcommands
 	switch os.Args[1] {
 	case "init":
