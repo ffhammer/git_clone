@@ -1,12 +1,14 @@
 package gvc
 
 import (
+	"bufio"
 	"crypto/sha1"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // mkdirIgnoreExists creates a directory if it doesn't already exist
@@ -67,4 +69,19 @@ func getStringSHA1(s string) string {
 	h.Write([]byte(s))
 
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func reader2String(reader io.Reader) (string, error) {
+	buf := new(strings.Builder)
+	_, err := io.Copy(buf, reader)
+	return buf.String(), err
+}
+
+func SplitLines(s string) []string {
+	var lines []string
+	sc := bufio.NewScanner(strings.NewReader(s))
+	for sc.Scan() {
+		lines = append(lines, sc.Text())
+	}
+	return lines
 }
