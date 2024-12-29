@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -42,32 +41,6 @@ func SplitPath(path string) []string {
 
 	slices.Reverse(result)
 	return result
-}
-
-func MakePathRelativeToRepo(RepoDIr string, filePath string) (string, error) {
-
-	absRepoDir, err := filepath.Abs(filepath.Dir(RepoDIr))
-	if err != nil {
-		return "", fmt.Errorf("error getting absolute path of repository: %w", err)
-	}
-
-	absFilePath, err := filepath.Abs(filePath)
-	if err != nil {
-		return "", fmt.Errorf("error getting absolute path of filePath: %w", err)
-	}
-
-	// Check if absFilePath is within absRepoDir
-	if !filepath.HasPrefix(absFilePath, absRepoDir) {
-		return "", errors.New("file is outside of the repository directory")
-	}
-
-	// Return the relative path of filePath from RepoDIr
-	relPath, err := filepath.Rel(absRepoDir, absFilePath)
-	if err != nil {
-		return "", fmt.Errorf("error computing relative path: %w", err)
-	}
-
-	return filepath.Clean(relPath), nil
 }
 
 func GetFileSHA1(filePath string) (string, error) {
@@ -109,4 +82,12 @@ func SplitLines(s string) []string {
 		lines = append(lines, sc.Text())
 	}
 	return lines
+}
+
+func IsDir(filePath string) (bool, error) {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return false, fmt.Errorf("could not access %s: %w", filePath, err)
+	}
+	return fileInfo.IsDir(), nil
 }

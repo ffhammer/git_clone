@@ -32,7 +32,7 @@ func BuildTreeFromIndex() (objectio.TreeMap, error) {
 	return lastTree, nil
 }
 func BuildTreeFromDir() (objectio.TreeMap, error) {
-	directory := filepath.Dir(utils.RepoDir) // Use RepoDir directly for clarity
+	directory := utils.GetBasePath() // Use RepoDir directly for clarity
 
 	// Initialize the tree
 	tree := make(objectio.TreeMap)

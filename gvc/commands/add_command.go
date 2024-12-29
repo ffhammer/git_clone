@@ -9,7 +9,6 @@ import (
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func addSingleFile(filePath string, force bool) error {
@@ -49,46 +48,13 @@ func addSingleFile(filePath string, force bool) error {
 }
 
 func AddFiles(filePath string, force bool) []string {
-	var files []string
-	var messages []string
 
-	// Check if the filePath is a directory
-	fileInfo, err := os.Stat(filePath)
+	files, err := utils.FindMatchingFiles(filePath)
 	if err != nil {
-		messages = append(messages, fmt.Sprintf("could not access %s: %v", filePath, err))
-		return messages
+		return []string{fmt.Sprintf("fatal: could not match files : %w", err)}
 	}
 
-	if fileInfo.IsDir() {
-		// Add all files in the directory recursively
-		err = filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				messages = append(messages, fmt.Sprintf("error accessing %s: %v", path, err))
-				return nil
-			}
-			// Only add regular files (not subdirectories)
-			if !info.IsDir() {
-				files = append(files, path)
-			}
-			return nil
-		})
-		if err != nil {
-			messages = append(messages, fmt.Sprintf("error walking directory %s: %v", filePath, err))
-			return messages
-		}
-	} else if strings.ContainsAny(filePath, "*?") {
-		// Handle glob pattern
-		globMatches, err := filepath.Glob(filePath)
-		if err != nil {
-			messages = append(messages, fmt.Sprintf("error processing glob pattern %s: %v", filePath, err))
-			return messages
-		}
-		files = append(files, globMatches...)
-	} else {
-		// Single file path, add directly
-		files = append(files, filePath)
-	}
-
+	messages := make([]string, len(files))
 	// Add each file using addSingleFile
 	for _, file := range files {
 		err := addSingleFile(file, force)

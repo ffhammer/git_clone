@@ -80,26 +80,39 @@ func AddFile(relPath, fileHash string) error {
 
 }
 
-func DeleteFile(relPath, fileHash string, cached bool) error {
-	// actual deletion is still missing
+type FileNotPartOfIndexOrTreeError struct{}
+
+func (m *FileNotPartOfIndexOrTreeError) Error() string {
+	return "the file was not wart of index or a tree when removing"
+}
+
+func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
+	// cached and force only  important if file is part of the index
 	changes, err := LoadIndexChanges()
 	if err != nil {
 		return err
 	}
-
 	status, err := partOfLastCommit(relPath, fileHash)
 	if err != nil {
 		return err
 	}
 
-	// if file does not exist
-	if status == NEW_FILE {
-		return fmt.Errorf("file %s was never tracked, hence cant be deleted", relPath)
+	if _, ok := changes[relPath]; ok && (cached || force) {
+		delete(changes, relPath)
+		return saveIndexChanges(changes)
+	} else if ok {
+		return fmt.Errorf("error: the following file has changes staged in the index:\n    %s\n    (use --cached to keep the file, or -f to force removal)", relPath)
+	} else if status == NEW_FILE {
+		return &FileNotPartOfIndexOrTreeError{}
 	}
 
 	newEntry := ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Delete}
 	changes[relPath] = newEntry
 
-	return saveIndexChanges(changes)
+	err = saveIndexChanges(changes)
+	if err != nil {
+		return err
+	}
 
+	return nil
 }
