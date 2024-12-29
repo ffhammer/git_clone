@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/utils"
@@ -47,11 +48,16 @@ func SaveObject(fileHash string, reader io.Reader) error {
 }
 
 func LoadObject(fileHash string) ([]byte, error) {
+
+	if fileHash == config.DOES_NOT_EXIST_HASH {
+		return nil, errors.New("trying to load 'DOES_NOT_EXIST_HASH' object")
+	}
+
 	subdir := filepath.Join(utils.RepoDir, config.OBJECT_FOLDER, fileHash[:2])
 	objectFilePath := filepath.Join(subdir, fileHash[2:])
 
 	if _, err := os.Stat(objectFilePath); os.IsExist(err) {
-		return nil, fmt.Errorf("Cant find object file %s: %w", objectFilePath, err)
+		return nil, fmt.Errorf("cant find object file %s: %w", objectFilePath, err)
 	}
 
 	file, err := os.Open(objectFilePath)

@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"git_clone/gvc/index"
 	"git_clone/gvc/pointers"
+	"strings"
 
 	"github.com/fatih/color"
 )
 
-func Status() ([]string, error) {
+func Status() (string, error) {
 
 	pointer, err := pointers.LoadCurrentPointer()
 	if err != nil {
-		return nil, fmt.Errorf("could not load pointer: %s", err)
+		return "", fmt.Errorf("could not load pointer: %s", err)
 	}
 
 	messages := make([]string, 0)
@@ -20,7 +21,7 @@ func Status() ([]string, error) {
 
 	changes, err := index.LoadIndexChanges()
 	if err != nil {
-		return nil, fmt.Errorf("could not load changes: %s", err)
+		return "", fmt.Errorf("could not load changes: %s", err)
 	}
 
 	if len(changes) > 0 {
@@ -34,7 +35,7 @@ func Status() ([]string, error) {
 
 	unstashedChanges, err := index.GetUnstagedChanges()
 	if err != nil {
-		return nil, fmt.Errorf("could not load unstaged changes: %s", err)
+		return "", fmt.Errorf("could not load unstaged changes: %s", err)
 	}
 
 	addingIndex := 0
@@ -64,5 +65,5 @@ func Status() ([]string, error) {
 		messages = append(messages, "no changes added to commit (use 'gvc add')")
 	}
 
-	return messages, nil
+	return strings.Join(messages, "\n"), nil
 }

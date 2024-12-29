@@ -17,7 +17,7 @@ const (
 )
 
 type LineChange struct {
-	action        EditType
+	Action        EditType
 	oldLineNumber int
 	newLineNumber int
 }
@@ -125,7 +125,7 @@ func DiffPrinter(oldText, newText string, changes []LineChange, writer io.Writer
 	newLines := utils.SplitLines(newText)
 
 	for _, change := range changes {
-		switch change.action {
+		switch change.Action {
 		case Insert:
 			line := fmt.Sprintf("+ %s\n", newLines[change.newLineNumber])
 			fmt.Fprint(writer, color.New(color.FgGreen).Sprint(line))

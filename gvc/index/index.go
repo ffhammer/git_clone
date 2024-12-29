@@ -2,6 +2,7 @@ package index
 
 import (
 	"fmt"
+	"git_clone/gvc/config"
 	"git_clone/gvc/pointers"
 	"time"
 )
@@ -34,24 +35,24 @@ type ChangeEntry struct {
 
 type ChangeMap map[string]ChangeEntry
 
-func partOfLastCommit(relPath, fileHash string) (fileStatus, error) {
+func partOfLastCommit(relPath, fileHash string) (fileStatus, string, error) {
 
 	treeMap, err := pointers.GetLastCommitsTree()
 	if err != nil {
-		return NEW_FILE, err
+		return NEW_FILE, "", err
 	}
 
 	val, ok := treeMap[relPath]
 
 	if !ok {
-		return NEW_FILE, nil
+		return NEW_FILE, config.DOES_NOT_EXIST_HASH, nil
 	}
 
 	if val.FileHash == fileHash {
-		return UNCHANGE_FILE, nil
+		return UNCHANGE_FILE, val.FileHash, nil
 	}
 
-	return MODIFIED_FILE, nil
+	return MODIFIED_FILE, val.FileHash, nil
 }
 
 func AddFile(relPath, fileHash string) error {
@@ -60,16 +61,17 @@ func AddFile(relPath, fileHash string) error {
 		return err
 	}
 
-	status, err := partOfLastCommit(relPath, fileHash)
+	status, oldHash, err := partOfLastCommit(relPath, fileHash)
 	if err != nil {
 		return err
 	}
 
 	var newEntry ChangeEntry
+
 	if status == MODIFIED_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Modify}
+		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Modify}
 	} else if status == NEW_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Add}
+		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Add}
 	} else { // in case of neither added nor modifed -> do nothing
 		return nil
 	}
@@ -92,7 +94,7 @@ func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
 	if err != nil {
 		return err
 	}
-	status, err := partOfLastCommit(relPath, fileHash)
+	status, _, err := partOfLastCommit(relPath, fileHash)
 	if err != nil {
 		return err
 	}
@@ -115,4 +117,8 @@ func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
 	}
 
 	return nil
+}
+
+func ClearAllChanges() error {
+	return saveIndexChanges(ChangeMap{})
 }

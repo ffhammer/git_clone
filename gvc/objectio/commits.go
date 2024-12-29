@@ -1,6 +1,11 @@
 package objectio
 
-import "git_clone/gvc/config"
+import (
+	"git_clone/gvc/config"
+	"git_clone/gvc/utils"
+	"io"
+	"strings"
+)
 
 type CommitMetdata struct {
 	ParentCommitHash string `json:"parent_commit_hash"`
@@ -17,4 +22,26 @@ func LoadCommit(fileHash string) (CommitMetdata, error) {
 	}
 
 	return LoadJsonObject[CommitMetdata](fileHash)
+}
+
+func SaveCommit(commit CommitMetdata) (string, error) {
+	reader, err := SerializeObject(commit)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert reader to a buffer to allow re-reading
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, reader)
+	if err != nil {
+		return "", err
+	}
+
+	jsonString := buf.String()
+	commitHash := utils.GetStringSHA1(jsonString)
+
+	// Create a new reader from the buffer for SaveObject
+	newReader := strings.NewReader(jsonString)
+
+	return commitHash, SaveObject(commitHash, newReader)
 }

@@ -1,5 +1,13 @@
 package commit
 
+import (
+	"fmt"
+	"git_clone/gvc/diffalgos"
+	"git_clone/gvc/index"
+	"git_clone/gvc/objectio"
+	"git_clone/gvc/utils"
+)
+
 // type CommitMetdata struct {
 // 	ParentCommitHash string `json:"parent_commit_hash"`
 // 	BranchName       string `json:"branch_name"`
@@ -9,29 +17,53 @@ package commit
 // 	TreeHash         string `json:"tree_hash"`
 // }
 
-func commit(message, author string)
+func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
+	changes, err := index.LoadIndexChanges()
+	if err != nil {
+		return 0, 0, fmt.Errorf("can't load index: %w", err)
+	}
 
-// Core Outline for commit
-// 1. Collect Metadata
-// Commit Message: Accept a commit message as input.
-// Author Information: Optionally include the author's name and email.
-// Timestamp: Record the current date and time.
-// Parent Commit: Identify the current HEAD or parent commit for history tracking.
-// 2. Generate the Snapshot  sdasd
-// Traverse the Index:
-// Read the index to get a list of tracked files and their hashes.
-// Verify the index reflects the working directory (optional: check for staged changes).
-// Generate a Tree Object:
-// Create a hierarchical representation of files and directories (like a Merkle tree).
-// Store each directory or file as an object with a hash.
-// 3. Write the Commit Object
-// Create a new commit object containing:
-// A reference to the root tree object (representing the snapshot).
-// Metadata: Commit message, author, timestamp, and parent commit hash(es).
-// Write the commit object to storage and generate its hash.
-// 4. Update the HEAD
-// Update the reference (HEAD) to point to the new commit.
-// Optionally, update the branch reference (e.g., refs/heads/main).
-// 5. Error Handling
-// Ensure a clean index and no untracked changes (optional, depending on your design).
-// Handle cases like an empty index or missing parent commits gracefully.
+	nInsertions := 0
+	nDels := 0
+
+	for _, val := range changes {
+		switch val.Action {
+		case index.Add:
+
+			object, err := objectio.LoadObject(val.FileHash)
+			if err != nil {
+				return 0, 0, fmt.Errorf("can't load object for file '%s': %w", val.RelPath, err)
+			}
+			nInsertions += utils.CountLines(object)
+		case index.Delete:
+			object, err := objectio.LoadObject(val.OldHash)
+			if err != nil {
+				return 0, 0, fmt.Errorf("can't load object for file '%s': %w", val.RelPath, err)
+			}
+			nDels += utils.CountLines(object)
+		case index.Modify:
+			oldObject, err := objectio.LoadObject(val.OldHash)
+			if err != nil {
+				return 0, 0, fmt.Errorf("cant load object for file '%s': %w", val.RelPath, err)
+			}
+
+			newObject, err := objectio.LoadObject(val.FileHash)
+			if err != nil {
+				return 0, 0, fmt.Errorf("cant load object for file '%s': %w", val.RelPath, err)
+			}
+
+			diffs := diffalgos.MyersDiff(utils.SplitLines(string(oldObject)), utils.SplitLines(string(newObject)))
+
+			for _, diff := range diffs {
+				if diff.Action == diffalgos.Insert {
+					nInsertions++
+				} else if diff.Action == diffalgos.Delete {
+					nDels++
+				}
+			}
+
+		}
+
+	}
+	return nInsertions, nDels, nil
+}

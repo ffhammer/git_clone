@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 )
 
 func MkdirIgnoreExists(path string) error {
@@ -69,7 +70,7 @@ func GetStringSHA1(s string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func reader2String(reader io.Reader) (string, error) {
+func Reader2String(reader io.Reader) (string, error) {
 	buf := new(strings.Builder)
 	_, err := io.Copy(buf, reader)
 	return buf.String(), err
@@ -90,4 +91,18 @@ func IsDir(filePath string) (bool, error) {
 		return false, fmt.Errorf("could not access %s: %w", filePath, err)
 	}
 	return fileInfo.IsDir(), nil
+}
+
+func CountLines(data []byte) int {
+	count := 0
+	for _, b := range data {
+		if b == '\n' {
+			count++
+		}
+	}
+	return count
+}
+
+func GetCurrentTimeString() string {
+	return time.Now().Format("2006-01-02 15:04:05")
 }
