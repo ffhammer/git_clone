@@ -30,6 +30,11 @@ func main() {
 	rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
 	rmRecursive := rmCmd.Bool("r", false, "")
 	rmForce := rmCmd.Bool("f", false, "")
+
+	commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
+	commitMessage := commitCmd.String("m", "", "The commit message")
+	commitUser := commitCmd.String("u", "", "The commit user")
+
 	// Check if a subcommand is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Error: expected a subcommand.")
@@ -65,7 +70,7 @@ func main() {
 	case "rm":
 		rmCmd.Parse(os.Args[2:])
 		if len(rmCmd.Args()) < 1 {
-			fmt.Println("Error: expected file paths to remove.")
+			fmt.Println("Error: expected file paths to rm.")
 			rmCmd.Usage()
 			os.Exit(1)
 		}
@@ -79,6 +84,27 @@ func main() {
 
 			fmt.Println(output)
 		}
+	case "commit":
+		commitCmd.Parse(os.Args[2:])
+
+		if *commitMessage == "" {
+			fmt.Println("Error: commit message (-m) is required.")
+			commitCmd.Usage()
+			os.Exit(1)
+		}
+		if *commitUser == "" {
+			fmt.Println("Error: commit user (-u) is required.")
+			commitCmd.Usage()
+			os.Exit(1)
+		}
+
+		output, err := commands.Commit(*commitMessage, *commitUser)
+		if err != nil {
+			fmt.Print(err)
+			os.Exit(1)
+		}
+
+		fmt.Println(output)
 
 	case "status":
 

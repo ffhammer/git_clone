@@ -55,7 +55,7 @@ func AddFiles(filePath string, force bool) string {
 		return fmt.Sprintf("fatal: could not match files : %w", err)
 	}
 
-	messages := make([]string, len(files))
+	messages := make([]string, 0)
 	// Add each file using addSingleFile
 	for _, file := range files {
 		err := addSingleFile(file, force)

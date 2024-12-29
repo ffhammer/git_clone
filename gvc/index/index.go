@@ -94,7 +94,7 @@ func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
 	if err != nil {
 		return err
 	}
-	status, _, err := partOfLastCommit(relPath, fileHash)
+	status, oldHash, err := partOfLastCommit(relPath, fileHash)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
 		return &FileNotPartOfIndexOrTreeError{}
 	}
 
-	newEntry := ChangeEntry{RelPath: relPath, FileHash: fileHash, EditedTime: time.Now().Unix(), Action: Delete}
+	newEntry := ChangeEntry{RelPath: relPath, OldHash: oldHash, FileHash: config.DOES_NOT_EXIST_HASH, EditedTime: time.Now().Unix(), Action: Delete}
 	changes[relPath] = newEntry
 
 	err = saveIndexChanges(changes)
