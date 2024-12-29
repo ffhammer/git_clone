@@ -20,14 +20,13 @@ func InitGVC() error {
 		return fmt.Errorf("failed to create directory %s: %w", config.OWN_FOLDER_NAME, err)
 	}
 
-	commitsPath := filepath.Join(config.OWN_FOLDER_NAME, config.COMMITS_FOLDER)
-	if err := os.Mkdir(commitsPath, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", commitsPath, err)
-	}
-
 	objetsPath := filepath.Join(config.OWN_FOLDER_NAME, config.OBJECT_FOLDER)
 	if err := os.Mkdir(objetsPath, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create directory %s: %w", objetsPath, err)
+	}
+
+	if err := os.Mkdir(filepath.Join(config.OWN_FOLDER_NAME, config.RefsFolder), os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", config.OWN_FOLDER_NAME, err)
 	}
 
 	utils.RepoDir = config.OWN_FOLDER_NAME

@@ -1,7 +1,6 @@
 package pointers
 
 import (
-	"encoding/json"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/objectio"
@@ -11,19 +10,22 @@ import (
 )
 
 type CurrentBranchPointer struct {
-	ParentCommitHash string `json:"parent_commit_hash"`
-	BranchName       string `json:"branch_name"`
+	ParentCommitHash string
+	BranchName       string
 }
 
 func SaveCurrentPointer(metadata CurrentBranchPointer) error {
-	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
 
-	data, err := json.MarshalIndent(metadata, "", "  ")
+	refsPath := filepath.Join(utils.RepoDir, config.RefsFolder, metadata.BranchName)
+
+	err := os.WriteFile(refsPath, []byte(metadata.ParentCommitHash), 0644)
 	if err != nil {
-		return fmt.Errorf("failed to serialize commit metadata: %w", err)
+		return err
 	}
 
-	err = os.WriteFile(pathToCurrentPointer, data, 0644)
+	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
+
+	err = os.WriteFile(pathToCurrentPointer, []byte(metadata.BranchName), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write commit metadata to file %s: %w", pathToCurrentPointer, err)
 	}
@@ -32,23 +34,23 @@ func SaveCurrentPointer(metadata CurrentBranchPointer) error {
 }
 
 func LoadCurrentPointer() (CurrentBranchPointer, error) {
-	filePath := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return CurrentBranchPointer{}, fmt.Errorf("current info file does not exist at %s", filePath)
-	}
-
-	data, err := os.ReadFile(filePath)
+	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
+	branchNameData, err := os.ReadFile(pathToCurrentPointer)
 	if err != nil {
-		return CurrentBranchPointer{}, fmt.Errorf("failed to read commit metadata file %s: %w", filePath, err)
+		return CurrentBranchPointer{}, fmt.Errorf("failed to read current branch pointer file %s: %w", pathToCurrentPointer, err)
 	}
 
-	var metadata CurrentBranchPointer
-	err = json.Unmarshal(data, &metadata)
+	branchName := string(branchNameData)
+	refsPath := filepath.Join(utils.RepoDir, config.RefsFolder, branchName)
+	parentCommitHashData, err := os.ReadFile(refsPath)
 	if err != nil {
-		return CurrentBranchPointer{}, fmt.Errorf("failed to deserialize commit metadata: %w", err)
+		return CurrentBranchPointer{}, fmt.Errorf("failed to read branch ref file %s: %w", refsPath, err)
 	}
 
-	return metadata, nil
+	return CurrentBranchPointer{
+		ParentCommitHash: string(parentCommitHashData),
+		BranchName:       branchName,
+	}, nil
 }
 
 func GetLastCommit() (objectio.CommitMetdata, error) {

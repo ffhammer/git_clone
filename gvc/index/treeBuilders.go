@@ -59,17 +59,21 @@ func BuildTreeFromDir() (objectio.TreeMap, error) {
 		}
 
 		// Check if the file should be ignored
-		ignore := ignorefiles.IsIgnored(relPath)
-		if ignore {
-			return nil
-		}
-
 		// Hash the file
 		fileHash, err := utils.GetFileSHA1(absPath)
 		if err != nil {
 			fmt.Printf("error hashing the file: %s", err)
 
 			return fmt.Errorf("hashing the file failed: %w", err)
+		}
+
+		// if ignored, check if the file is already tracked (like with add -f). in case of new file return nil -> skip
+		if ignorefiles.IsIgnored(relPath) {
+			if status, _, err := partOfLastCommit(relPath, fileHash); err != nil {
+				return fmt.Errorf("cant check if part of last commit '%s': %w", absPath, err)
+			} else if status == NEW_FILE {
+				return nil
+			}
 		}
 
 		// Add the file to the tree
