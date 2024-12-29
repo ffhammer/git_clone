@@ -82,14 +82,12 @@ func main() {
 
 	case "status":
 
-		lines, err := commands.Status()
+		output, err := commands.Status()
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
 		}
-		for _, line := range lines {
-			fmt.Println(line)
-		}
+		fmt.Print(output)
 	case "help", "-h", "--help":
 		printGlobalHelp()
 	default:
