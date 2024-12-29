@@ -26,6 +26,7 @@ func main() {
 	// Define subcommands
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	// statusCmd := flag.NewFlagSet("status", flag.ExitOnError)
 
 	// Flags for "add" subcommand
 	force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
@@ -68,6 +69,16 @@ func main() {
 					color.Red(message)
 				}
 			}
+		}
+	case "status":
+
+		lines, err := commands.Status()
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+		for _, line := range lines {
+			fmt.Println(line)
 		}
 	case "help", "-h", "--help":
 		printGlobalHelp()

@@ -70,7 +70,7 @@ func parseIgnoreFile(repoPath string) ([]string, error) {
 
 func IsIgnored(relPath string) bool {
 	// this is there to later also handle nested .gvcingores
-	return isInIgnoreFile(relPath, utils.RepoDIr)
+	return isInIgnoreFile(relPath, utils.RepoDir)
 }
 
 func isInIgnoreFile(relPath string, repoPath string) bool {

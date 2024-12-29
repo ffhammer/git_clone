@@ -13,7 +13,7 @@ import (
 )
 
 func addSingleFile(filePath string, force bool) error {
-	next_commit := filepath.Join(utils.RepoDIr, config.NEXT_COMMIT)
+	next_commit := filepath.Join(utils.RepoDir, config.NEXT_COMMIT)
 
 	utils.MkdirIgnoreExists(next_commit)
 
@@ -21,7 +21,7 @@ func addSingleFile(filePath string, force bool) error {
 		return fmt.Errorf("can't find file %s: %w", filePath, err)
 	}
 
-	relPath, err := utils.MakePathRelativeToRepo(utils.RepoDIr, filePath)
+	relPath, err := utils.MakePathRelativeToRepo(utils.RepoDir, filePath)
 	if err != nil {
 		return err
 	}

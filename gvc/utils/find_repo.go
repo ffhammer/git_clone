@@ -6,32 +6,41 @@ import (
 	"git_clone/gvc/config"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var (
-	RepoDIr string
+	RepoDir string
+	once    sync.Once
+	initErr error
 )
 
+// FindRepo initializes the RepoDir variable and ensures it is set only once.
 func FindRepo() error {
-	// Get the current working directory
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("error finding cwd: %w", err)
-	}
-
-	for {
-		repoPath := filepath.Join(cwd, config.OWN_FOLDER_NAME)
-		if _, err := os.Stat(repoPath); err == nil {
-			RepoDIr = repoPath
-			return nil
+	once.Do(func() {
+		// Get the current working directory
+		cwd, err := os.Getwd()
+		if err != nil {
+			initErr = fmt.Errorf("error finding cwd: %w", err)
+			return
 		}
 
-		parentDir := filepath.Dir(cwd)
-		if parentDir == cwd {
-			return errors.New("repository folder not found")
-		}
+		for {
+			repoPath := filepath.Join(cwd, config.OWN_FOLDER_NAME)
+			if _, err := os.Stat(repoPath); err == nil {
+				RepoDir = repoPath
+				return
+			}
 
-		cwd = parentDir
-	}
+			parentDir := filepath.Dir(cwd)
+			if parentDir == cwd {
+				initErr = errors.New("repository folder not found")
+				return
+			}
+
+			cwd = parentDir
+		}
+	})
+
+	return initErr
 }

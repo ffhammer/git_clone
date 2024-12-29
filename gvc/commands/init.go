@@ -13,7 +13,7 @@ func InitGVC() error {
 	// Check if the repository already exists
 	err := utils.FindRepo()
 	if err == nil {
-		return fmt.Errorf("repository already exists at %s", utils.RepoDIr)
+		return fmt.Errorf("repository already exists at %s", utils.RepoDir)
 	}
 
 	if err := os.Mkdir(config.OWN_FOLDER_NAME, os.ModePerm); err != nil {
@@ -30,8 +30,13 @@ func InitGVC() error {
 		return fmt.Errorf("failed to create directory %s: %w", objetsPath, err)
 	}
 
+	utils.RepoDir = config.OWN_FOLDER_NAME
+
 	inital_metdata := pointers.CurrentBranchPointer{ParentCommitHash: config.DOES_NOT_EXIST_HASH, BranchName: config.STARTING_BRANCH}
-	pointers.SaveCurrentPointer(inital_metdata)
+	err = pointers.SaveCurrentPointer(inital_metdata)
+	if err != nil {
+		return err
+	}
 
 	fmt.Println("Initialized a new repository at", config.OWN_FOLDER_NAME)
 	return nil

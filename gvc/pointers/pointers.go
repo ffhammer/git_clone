@@ -16,8 +16,7 @@ type CurrentBranchPointer struct {
 }
 
 func SaveCurrentPointer(metadata CurrentBranchPointer) error {
-
-	pathToCurrentPointer := filepath.Join(utils.RepoDIr, config.CurrentBranchPointerFile)
+	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
 
 	data, err := json.MarshalIndent(metadata, "", "  ")
 	if err != nil {
@@ -33,7 +32,7 @@ func SaveCurrentPointer(metadata CurrentBranchPointer) error {
 }
 
 func LoadCurrentPointer() (CurrentBranchPointer, error) {
-	filePath := filepath.Join(utils.RepoDIr, config.CurrentBranchPointerFile)
+	filePath := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return CurrentBranchPointer{}, fmt.Errorf("current info file does not exist at %s", filePath)
 	}
@@ -58,7 +57,7 @@ func GetLastCommit() (objectio.CommitMetdata, error) {
 	if err != nil {
 		return objectio.CommitMetdata{}, fmt.Errorf("could not laod current branch pointer %s", err)
 	}
-	return objectio.LoadCommit(branchPointer.BranchName)
+	return objectio.LoadCommit(branchPointer.ParentCommitHash)
 
 }
 

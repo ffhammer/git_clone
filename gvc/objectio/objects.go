@@ -14,7 +14,7 @@ import (
 
 func SaveObject(fileHash string, reader io.Reader) error {
 
-	subdir := filepath.Join(utils.RepoDIr, config.OBJECT_FOLDER, fileHash[:2])
+	subdir := filepath.Join(utils.RepoDir, config.OBJECT_FOLDER, fileHash[:2])
 
 	if err := utils.MkdirIgnoreExists(subdir); err != nil {
 		return fmt.Errorf("error creating subdir %s: %w", subdir, err)
@@ -47,7 +47,7 @@ func SaveObject(fileHash string, reader io.Reader) error {
 }
 
 func LoadObject(fileHash string) ([]byte, error) {
-	subdir := filepath.Join(utils.RepoDIr, config.OBJECT_FOLDER, fileHash[:2])
+	subdir := filepath.Join(utils.RepoDir, config.OBJECT_FOLDER, fileHash[:2])
 	objectFilePath := filepath.Join(subdir, fileHash[2:])
 
 	if _, err := os.Stat(objectFilePath); os.IsExist(err) {

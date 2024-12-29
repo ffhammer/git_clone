@@ -12,7 +12,7 @@ import (
 )
 
 func getIndexPath() string {
-	return path.Join(utils.RepoDIr, config.NEXT_COMMIT)
+	return path.Join(utils.RepoDir, config.NEXT_COMMIT)
 }
 
 func getChangesPath() string {

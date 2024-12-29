@@ -1,17 +1,20 @@
 package index
 
-import "git_clone/gvc/config"
+import (
+	"fmt"
+	"git_clone/gvc/config"
+)
 
 func GetUnstagedChanges() ([]ChangeEntry, error) {
 
 	cwdTree, err := BuildTreeFromDir()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error building tree from dir: \n%s", err)
 	}
 
 	stagedTree, err := BuildTreeFromIndex()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error building tree from index: \n%s", err)
 	}
 
 	changes := make([]ChangeEntry, 0)

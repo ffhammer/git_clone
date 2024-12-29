@@ -42,7 +42,7 @@ func Status() ([]string, error) {
 	if len(unstashedChanges) > 0 && unstashedChanges[0].Action != index.Add {
 		messages = append(messages, "Changes not staged for commit:\n\t(use 'gvc add/rm <file>...' to update what will be committed)\n\t(use 'gvc restore <file>...' to discard changes in working directory)")
 
-		for i := 0; unstashedChanges[i].Action != index.Add; i++ {
+		for i := 0; i < len(unstashedChanges) && unstashedChanges[i].Action != index.Add; i++ {
 			change := unstashedChanges[i]
 			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%9s\t%s", change.Action+":", change.RelPath)))
 			addingIndex++
@@ -53,7 +53,7 @@ func Status() ([]string, error) {
 	if len(unstashedChanges) > addingIndex {
 		messages = append(messages, "Untracked files:\n\t(use 'gvc add/rm <file>...' to update what will be committed)")
 
-		for i := addingIndex; unstashedChanges[i].Action != index.Add; i++ {
+		for i := addingIndex; i < len(unstashedChanges) && unstashedChanges[i].Action != index.Add; i++ {
 			change := unstashedChanges[i]
 			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%s", change.RelPath)))
 		}

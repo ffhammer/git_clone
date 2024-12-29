@@ -32,7 +32,7 @@ func BuildTreeFromIndex() (objectio.TreeMap, error) {
 	return lastTree, nil
 }
 func BuildTreeFromDir() (objectio.TreeMap, error) {
-	directory := utils.RepoDIr // Use RepoDir directly for clarity
+	directory := utils.RepoDir // Use RepoDir directly for clarity
 
 	// Initialize the tree
 	tree := make(objectio.TreeMap)
@@ -44,7 +44,6 @@ func BuildTreeFromDir() (objectio.TreeMap, error) {
 
 		// Skip the special directory (e.g., ".git" equivalent)
 		if info.IsDir() && info.Name() == config.OWN_FOLDER_NAME {
-			fmt.Printf("skipping a dir without errors: %+v \n", info.Name())
 			return filepath.SkipDir
 		}
 
