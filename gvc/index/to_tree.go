@@ -16,7 +16,7 @@ func BuildTreeFromIndex() (objectio.TreeMap, error) {
 	if err != nil {
 		return objectio.TreeMap{}, err
 	}
-	changes, err := loadIndexChanges()
+	changes, err := LoadIndexChanges()
 	if err != nil {
 		return objectio.TreeMap{}, err
 	}

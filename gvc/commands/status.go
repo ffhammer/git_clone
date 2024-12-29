@@ -2,7 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"git_clone/gvc/index"
 	"git_clone/gvc/pointers"
+
+	"github.com/fatih/color"
 )
 
 func Status() ([]string, error) {
@@ -13,29 +16,53 @@ func Status() ([]string, error) {
 	}
 
 	messages := make([]string, 0)
-	messages = append(messages, fmt.Sprintf("On branch %s\n", pointer.BranchName))
+	messages = append(messages, fmt.Sprintf("On branch %s\n\n", pointer.BranchName))
 
-	// 	On branch master
-	// Your branch is up to date with 'origin/master'.
+	changes, err := index.LoadIndexChanges()
+	if err != nil {
+		return nil, fmt.Errorf("could not load changes: %s", err)
+	}
 
-	// Changes to be committed:
-	//   (use "git restore --staged <file>..." to unstage)
-	//         modified:   gvc/index/index.go
-	//         modified:   gvc/objectio/trees.go
-	//         modified:   gvc/pointers/pointers.go
+	if len(changes) > 0 {
+		messages = append(messages, "Changes to be committed:\n\t(use 'gvc restore --staged <file>...' to unstage)")
 
-	// Changes not staged for commit:
-	//   (use "git add/rm <file>..." to update what will be committed)
-	//   (use "git restore <file>..." to discard changes in working directory)
-	//         deleted:    gvc/changes.goo
-	//         deleted:    gvc/commit_saving.goo
-	//         modified:   gvc/index/index.go
-	//         modified:   gvc/objectio/trees.go
-	//         modified:   gvc/pointers/pointers.go
+		for _, change := range changes {
+			messages = append(messages, color.GreenString(fmt.Sprintf("\t\t%9s\t%s", change.Action+":", change.RelPath)))
+		}
+		messages = append(messages, "\n")
+	}
 
-	// Untracked files:
-	//   (use "git add <file>..." to include in what will be committed)
-	//         gvc/index/to_tree.go
-	//         gvc/status/
+	unstashedChanges, err := index.GetUnstagedChanges()
+	if err != nil {
+		return nil, fmt.Errorf("could not load unstaged changes: %s", err)
+	}
 
+	addingIndex := 0
+
+	if len(unstashedChanges) > 0 && unstashedChanges[0].Action != index.Add {
+		messages = append(messages, "Changes not staged for commit:\n\t(use 'gvc add/rm <file>...' to update what will be committed)\n\t(use 'gvc restore <file>...' to discard changes in working directory)")
+
+		for i := 0; unstashedChanges[i].Action != index.Add; i++ {
+			change := unstashedChanges[i]
+			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%9s\t%s", change.Action+":", change.RelPath)))
+			addingIndex++
+		}
+		messages = append(messages, "\n")
+	}
+
+	if len(unstashedChanges) > addingIndex {
+		messages = append(messages, "Untracked files:\n\t(use 'gvc add/rm <file>...' to update what will be committed)")
+
+		for i := addingIndex; unstashedChanges[i].Action != index.Add; i++ {
+			change := unstashedChanges[i]
+			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%s", change.RelPath)))
+		}
+		messages = append(messages, "\n")
+	}
+
+	if len(changes) == 0 {
+		messages = append(messages, "no changes added to commit (use 'gvc add')")
+	}
+
+	return messages, nil
 }

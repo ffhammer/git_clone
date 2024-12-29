@@ -42,7 +42,7 @@ func saveIndexChanges(changes ChangeMap) error {
 
 }
 
-func loadIndexChanges() (ChangeMap, error) {
+func LoadIndexChanges() (ChangeMap, error) {
 	changesPath := getChangesPath()
 
 	// Open the file for reading

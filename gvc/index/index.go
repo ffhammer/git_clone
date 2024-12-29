@@ -9,9 +9,9 @@ import (
 type ChangeAction string
 
 const (
-	Add    ChangeAction = "add"
-	Modify ChangeAction = "modify"
-	Delete ChangeAction = "delete"
+	Add    ChangeAction = "added"
+	Modify ChangeAction = "modified"
+	Delete ChangeAction = "deleted"
 	// Stash    ChangeAction = "stash"
 	// Unmerged ChangeAction = "unmerged"
 )
@@ -27,6 +27,7 @@ const (
 type ChangeEntry struct {
 	RelPath    string       `json:"relpath"`
 	FileHash   string       `json:"filehash"`
+	OldHash    string       `json:"oldHash"`
 	EditedTime int64        `json:"editTime"`
 	Action     ChangeAction `json:"actiion"`
 }
@@ -54,7 +55,7 @@ func partOfLastCommit(relPath, fileHash string) (fileStatus, error) {
 }
 
 func AddFile(relPath, fileHash string) error {
-	changes, err := loadIndexChanges()
+	changes, err := LoadIndexChanges()
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func AddFile(relPath, fileHash string) error {
 
 func DeleteFile(relPath, fileHash string, cached bool) error {
 	// actual deletion is still missing
-	changes, err := loadIndexChanges()
+	changes, err := LoadIndexChanges()
 	if err != nil {
 		return err
 	}
