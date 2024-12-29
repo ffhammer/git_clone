@@ -4,12 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"git_clone/gvc/commands"
 	"git_clone/gvc/utils"
-
-	"github.com/fatih/color"
 )
 
 // Main usage information
@@ -25,12 +22,14 @@ func printGlobalHelp() {
 func main() {
 	// Define subcommands
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	// statusCmd := flag.NewFlagSet("status", flag.ExitOnError)
 
-	// Flags for "add" subcommand
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 	force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
 
+	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
+	rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
+	rmRecursive := rmCmd.Bool("r", false, "")
+	rmForce := rmCmd.Bool("f", false, "")
 	// Check if a subcommand is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Error: expected a subcommand.")
@@ -52,7 +51,6 @@ func main() {
 			fmt.Println("Error:", err)
 			os.Exit(1)
 		}
-		fmt.Println("Repository initialized successfully.")
 	case "add":
 		addCmd.Parse(os.Args[2:])
 		if len(addCmd.Args()) < 1 {
@@ -61,15 +59,27 @@ func main() {
 			os.Exit(1)
 		}
 		for _, filePath := range addCmd.Args() {
-			messages := commands.AddFiles(filePath, *force)
-			for _, message := range messages {
-				if strings.HasPrefix(message, "added") {
-					color.Green(message)
-				} else {
-					color.Red(message)
-				}
-			}
+			output := commands.AddFiles(filePath, *force)
+			fmt.Println(output)
 		}
+	case "rm":
+		rmCmd.Parse(os.Args[2:])
+		if len(rmCmd.Args()) < 1 {
+			fmt.Println("Error: expected file paths to remove.")
+			rmCmd.Usage()
+			os.Exit(1)
+		}
+		for _, filePath := range rmCmd.Args() {
+			output, err := commands.RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)
+
+			if err != nil {
+				fmt.Print(err)
+				os.Exit(1)
+			}
+
+			fmt.Println(output)
+		}
+
 	case "status":
 
 		lines, err := commands.Status()

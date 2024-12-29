@@ -17,7 +17,7 @@ func commit(message, author string)
 // Author Information: Optionally include the author's name and email.
 // Timestamp: Record the current date and time.
 // Parent Commit: Identify the current HEAD or parent commit for history tracking.
-// 2. Generate the Snapshot
+// 2. Generate the Snapshot  sdasd
 // Traverse the Index:
 // Read the index to get a list of tracked files and their hashes.
 // Verify the index reflects the working directory (optional: check for staged changes).

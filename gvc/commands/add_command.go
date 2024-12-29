@@ -9,6 +9,7 @@ import (
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func addSingleFile(filePath string, force bool) error {
@@ -47,11 +48,11 @@ func addSingleFile(filePath string, force bool) error {
 	return nil
 }
 
-func AddFiles(filePath string, force bool) []string {
+func AddFiles(filePath string, force bool) string {
 
 	files, err := utils.FindMatchingFiles(filePath)
 	if err != nil {
-		return []string{fmt.Sprintf("fatal: could not match files : %w", err)}
+		return fmt.Sprintf("fatal: could not match files : %w", err)
 	}
 
 	messages := make([]string, len(files))
@@ -60,10 +61,8 @@ func AddFiles(filePath string, force bool) []string {
 		err := addSingleFile(file, force)
 		if err != nil {
 			messages = append(messages, fmt.Sprintf("could not add file %s: %v", file, err))
-		} else {
-			messages = append(messages, fmt.Sprintf("added file %s", file))
 		}
 	}
 
-	return messages
+	return strings.Join(messages, "\n")
 }
