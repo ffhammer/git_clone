@@ -32,7 +32,7 @@ func BuildTreeFromIndex() (objectio.TreeMap, error) {
 	return lastTree, nil
 }
 func BuildTreeFromDir() (objectio.TreeMap, error) {
-	directory := utils.RepoDir // Use RepoDir directly for clarity
+	directory := filepath.Dir(utils.RepoDir) // Use RepoDir directly for clarity
 
 	// Initialize the tree
 	tree := make(objectio.TreeMap)
@@ -54,6 +54,7 @@ func BuildTreeFromDir() (objectio.TreeMap, error) {
 		// Convert absolute path to relative path
 		relPath, err := filepath.Rel(directory, absPath)
 		if err != nil {
+			fmt.Printf("error getting relative path: %s", err)
 			return fmt.Errorf("error getting relative path: %w", err)
 		}
 
@@ -66,6 +67,8 @@ func BuildTreeFromDir() (objectio.TreeMap, error) {
 		// Hash the file
 		fileHash, err := utils.GetFileSHA1(absPath)
 		if err != nil {
+			fmt.Printf("error hashing the file: %s", err)
+
 			return fmt.Errorf("hashing the file failed: %w", err)
 		}
 

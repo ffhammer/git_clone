@@ -24,10 +24,10 @@ func Status() ([]string, error) {
 	}
 
 	if len(changes) > 0 {
-		messages = append(messages, "Changes to be committed:\n\t(use 'gvc restore --staged <file>...' to unstage)")
+		messages = append(messages, "Changes to be committed:\n    (use 'gvc restore --staged <file>...' to unstage)")
 
 		for _, change := range changes {
-			messages = append(messages, color.GreenString(fmt.Sprintf("\t\t%9s\t%s", change.Action+":", change.RelPath)))
+			messages = append(messages, color.GreenString(fmt.Sprintf("    %-9s    %s", change.Action+":", change.RelPath)))
 		}
 		messages = append(messages, "\n")
 	}
@@ -40,22 +40,22 @@ func Status() ([]string, error) {
 	addingIndex := 0
 
 	if len(unstashedChanges) > 0 && unstashedChanges[0].Action != index.Add {
-		messages = append(messages, "Changes not staged for commit:\n\t(use 'gvc add/rm <file>...' to update what will be committed)\n\t(use 'gvc restore <file>...' to discard changes in working directory)")
+		messages = append(messages, "Changes not staged for commit:\n    (use 'gvc add/rm <file>...' to update what will be committed)\n    (use 'gvc restore <file>...' to discard changes in working directory)")
 
 		for i := 0; i < len(unstashedChanges) && unstashedChanges[i].Action != index.Add; i++ {
 			change := unstashedChanges[i]
-			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%9s\t%s", change.Action+":", change.RelPath)))
+			messages = append(messages, color.RedString(fmt.Sprintf("    %-9s    %s", change.Action+":", change.RelPath)))
 			addingIndex++
 		}
 		messages = append(messages, "\n")
 	}
 
 	if len(unstashedChanges) > addingIndex {
-		messages = append(messages, "Untracked files:\n\t(use 'gvc add/rm <file>...' to update what will be committed)")
+		messages = append(messages, "Untracked files:\n    (use 'gvc add/rm <file>...' to update what will be committed)")
 
-		for i := addingIndex; i < len(unstashedChanges) && unstashedChanges[i].Action != index.Add; i++ {
+		for i := addingIndex; i < len(unstashedChanges); i++ {
 			change := unstashedChanges[i]
-			messages = append(messages, color.RedString(fmt.Sprintf("\t\t%s", change.RelPath)))
+			messages = append(messages, color.RedString(fmt.Sprintf("    %s", change.RelPath)))
 		}
 		messages = append(messages, "\n")
 	}
