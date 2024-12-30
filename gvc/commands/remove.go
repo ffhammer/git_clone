@@ -40,7 +40,7 @@ func RemoveFile(filePath string, cached, recursive, force bool) (string, error) 
 		}
 
 		// if there is something that is untracked but in the same folder and we delete a folder we can ignore/ if only -> return error
-		err = index.RemoveFileFromIndex(relpath, fileHash, cached, force)
+		err = index.RemoveFile(relpath, fileHash, cached, force)
 		var notExistError *index.FileNotPartOfIndexOrTreeError
 		if errors.As(err, &notExistError) {
 			allMatches = false

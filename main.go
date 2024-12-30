@@ -20,21 +20,6 @@ func printGlobalHelp() {
 }
 
 func main() {
-	// Define subcommands
-	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-
-	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
-
-	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
-	rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
-	rmRecursive := rmCmd.Bool("r", false, "")
-	rmForce := rmCmd.Bool("f", false, "")
-
-	commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
-	commitMessage := commitCmd.String("m", "", "The commit message")
-	commitUser := commitCmd.String("u", "", "The commit user")
-
 	// Check if a subcommand is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Error: expected a subcommand.")
@@ -50,6 +35,7 @@ func main() {
 	// Handle subcommands
 	switch os.Args[1] {
 	case "init":
+		initCmd := flag.NewFlagSet("init", flag.ExitOnError)
 		initCmd.Parse(os.Args[2:])
 		err := commands.InitGVC()
 		if err != nil {
@@ -57,6 +43,8 @@ func main() {
 			os.Exit(1)
 		}
 	case "add":
+		addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+		force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
 		addCmd.Parse(os.Args[2:])
 		if len(addCmd.Args()) < 1 {
 			fmt.Println("Error: expected file paths to add.")
@@ -68,6 +56,11 @@ func main() {
 			fmt.Println(output)
 		}
 	case "rm":
+		rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
+		rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
+		rmRecursive := rmCmd.Bool("r", false, "")
+		rmForce := rmCmd.Bool("f", false, "")
+
 		rmCmd.Parse(os.Args[2:])
 		if len(rmCmd.Args()) < 1 {
 			fmt.Println("Error: expected file paths to rm.")
@@ -85,6 +78,9 @@ func main() {
 			fmt.Println(output)
 		}
 	case "commit":
+		commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
+		commitMessage := commitCmd.String("m", "", "The commit message")
+		commitUser := commitCmd.String("u", "", "The commit user")
 		commitCmd.Parse(os.Args[2:])
 
 		if *commitMessage == "" {
@@ -114,6 +110,28 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Print(output)
+
+	case "restore":
+		restoreCmd := flag.NewFlagSet("restore", flag.ExitOnError)
+		// restoreSource := restoreCmd.String("source", "", "The branch or commit")
+		restoreStaged := restoreCmd.Bool("staged", false, "")
+		restoreWorktree := restoreCmd.Bool("worktree", false, "")
+
+		restoreCmd.Parse(os.Args[2:])
+
+		if len(restoreCmd.Args()) < 1 {
+			fmt.Println("Error: expected file paths to restore.")
+			restoreCmd.Usage()
+			os.Exit(1)
+		}
+
+		for _, filePath := range restoreCmd.Args() {
+			if err := commands.Restore(filePath, "HEAD", *restoreStaged, *restoreWorktree); err != nil {
+				fmt.Print(err)
+				os.Exit(1)
+			}
+		}
+
 	case "help", "-h", "--help":
 		printGlobalHelp()
 	default:

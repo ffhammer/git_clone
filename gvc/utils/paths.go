@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func FindMatchingFiles(filePath string) ([]string, error) {
@@ -33,7 +31,7 @@ func FindMatchingFiles(filePath string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error walking directory %s: %w", filePath, err)
 		}
-	} else if strings.ContainsAny(filePath, "*?") {
+	} else if IsGlob(filePath) {
 		// Handle glob pattern
 		globMatches, err := filepath.Glob(filePath)
 		if err != nil {
@@ -65,12 +63,12 @@ func MakePathRelativeToRepo(RepoDIr string, filePath string) (string, error) {
 
 	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
-		return "", fmt.Errorf("error getting absolute path of filePath: %w", err)
+		return "", fmt.Errorf("error getting absolute path of filePath '%s': %w", filePath, err)
 	}
 
 	// Check if absFilePath is within absRepoDir
 	if !filepath.HasPrefix(absFilePath, absRepoDir) {
-		return "", errors.New("file is outside of the repository directory")
+		return "", fmt.Errorf("file '%s' is outside of the repository directory", filePath)
 	}
 
 	// Return the relative path of filePath from RepoDIr

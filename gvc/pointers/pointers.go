@@ -59,7 +59,13 @@ func GetLastCommit() (objectio.CommitMetdata, error) {
 	if err != nil {
 		return objectio.CommitMetdata{}, fmt.Errorf("could not laod current branch pointer %s", err)
 	}
-	return objectio.LoadCommit(branchPointer.ParentCommitHash)
+
+	val, err := objectio.LoadCommit(branchPointer.ParentCommitHash)
+	if err != nil {
+		return objectio.CommitMetdata{}, fmt.Errorf("error while lading last commits from object storage: %w", err)
+	}
+
+	return val, nil
 
 }
 
@@ -68,5 +74,11 @@ func GetLastCommitsTree() (objectio.TreeMap, error) {
 	if err != nil {
 		return objectio.TreeMap{}, err
 	}
-	return objectio.LoadTree(lastCommit.TreeHash)
+
+	val, err := objectio.LoadTree(lastCommit.TreeHash)
+	if err != nil {
+		return nil, fmt.Errorf("error while lading last commits tree from object storage: %w", err)
+	}
+
+	return val, nil
 }

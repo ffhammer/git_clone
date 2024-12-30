@@ -88,7 +88,7 @@ func (m *FileNotPartOfIndexOrTreeError) Error() string {
 	return "the file was not wart of index or a tree when removing"
 }
 
-func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
+func RemoveFile(relPath, fileHash string, force, cached bool) error {
 	// cached and force only  important if file is part of the index
 	changes, err := LoadIndexChanges()
 	if err != nil {
@@ -121,4 +121,14 @@ func RemoveFileFromIndex(relPath, fileHash string, force, cached bool) error {
 
 func ClearAllChanges() error {
 	return saveIndexChanges(ChangeMap{})
+}
+
+func RemoveFromIndex(relPath string) error {
+	changes, err := LoadIndexChanges()
+	if err != nil {
+		return fmt.Errorf("cant load changes %w", err)
+	}
+
+	delete(changes, relPath)
+	return saveIndexChanges(changes)
 }
