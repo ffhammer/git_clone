@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
@@ -55,7 +56,7 @@ func matchFileWithMapStringKey[T any](relPath string, m map[string]T) []string {
 	return files
 }
 
-func Restore(absPath string, source string, staged, worktTree bool) error {
+func restore(absPath string, source string, staged, worktTree bool) error {
 	// for the moment souce is not implemented
 	if source != "HEAD" {
 		return errors.New("source not implemtend yet")
@@ -103,7 +104,7 @@ func Restore(absPath string, source string, staged, worktTree bool) error {
 
 		entry, ok := tree[matchedPath]
 		if !ok {
-			return fmt.Errorf("this should not happen!")
+			return fmt.Errorf("this should not happens")
 		}
 
 		oldVal, err := objectio.RetrieveFile(entry.FileHash)
@@ -111,14 +112,37 @@ func Restore(absPath string, source string, staged, worktTree bool) error {
 			return fmt.Errorf("error retriving file '%s': %w", matchedPath, err)
 		}
 
-		if err := utils.MkdirIgnoreExists(filepath.Dir(matchedPath)); err != nil {
-			return fmt.Errorf("error creating directories for '%s': %w", matchedPath, err)
+		matchedAbsPath := utils.RelPathToAbs(matchedPath)
+		if err := utils.MkdirIgnoreExists(filepath.Dir(matchedAbsPath)); err != nil {
+			return fmt.Errorf("error creating directories for '%s': %w", matchedAbsPath, err)
 		}
 
-		if err := os.WriteFile(matchedPath, []byte(oldVal), os.ModePerm); err != nil {
-			return fmt.Errorf("error writing file '%s': %w", matchedPath, err)
+		if err := os.WriteFile(matchedAbsPath, []byte(oldVal), os.ModePerm); err != nil {
+			return fmt.Errorf("error writing file '%s': %w", matchedAbsPath, err)
 		}
 	}
 
 	return nil
+}
+
+func Restore(args []string) string {
+	restoreCmd := flag.NewFlagSet("restore", flag.ExitOnError)
+	// restoreSource := restoreCmd.String("source", "", "The branch or commit")
+	restoreStaged := restoreCmd.Bool("staged", false, "")
+	restoreWorktree := restoreCmd.Bool("worktree", false, "")
+
+	restoreCmd.Parse(args)
+
+	if len(restoreCmd.Args()) < 1 {
+		fmt.Println("Error: expected file paths to restore.")
+		restoreCmd.Usage()
+		os.Exit(1)
+	}
+
+	for _, filePath := range restoreCmd.Args() {
+		if err := restore(filePath, "HEAD", *restoreStaged, *restoreWorktree); err != nil {
+			return fmt.Errorf("restore failed because: %w", err).Error()
+		}
+	}
+	return ""
 }

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"git_clone/gvc/index"
 	"git_clone/gvc/utils"
@@ -72,4 +73,33 @@ func RemoveFile(filePath string, cached, recursive, force bool) (string, error) 
 	}
 
 	return strings.Join(messages, "\n"), nil
+}
+
+func RMCommand(args []string) string {
+
+	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
+	rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
+	rmRecursive := rmCmd.Bool("r", false, "")
+	rmForce := rmCmd.Bool("f", false, "")
+
+	rmCmd.Parse(os.Args[2:])
+	if len(rmCmd.Args()) < 1 {
+		fmt.Println("Error: expected file paths to rm.")
+		rmCmd.Usage()
+		os.Exit(1)
+	}
+
+	output := ""
+	for _, filePath := range rmCmd.Args() {
+		newOutput, err := RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)
+
+		if err != nil {
+			output += fmt.Errorf("error for rile '%s': %w", filePath, err).Error()
+			return output
+		}
+
+		output += newOutput + "\n"
+	}
+	return output
+
 }

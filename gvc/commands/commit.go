@@ -1,15 +1,38 @@
 package commands
 
 import (
+	"flag"
 	"fmt"
 	"git_clone/gvc/commit"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/pointers"
 	"git_clone/gvc/utils"
+	"os"
 )
 
-func Commit(message, author string) (string, error) {
+func Commit() string {
+	commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
+	commitMessage := commitCmd.String("m", "", "The commit message")
+	commitUser := commitCmd.String("u", "", "The commit user")
+	commitCmd.Parse(os.Args[2:])
+
+	if *commitMessage == "" {
+		return "Error: commit message (-m) is required."
+	}
+	if *commitUser == "" {
+		return "Error: commit user (-u) is required."
+	}
+
+	output, err := commit_func(*commitMessage, *commitUser)
+
+	if err != nil {
+		return fmt.Errorf("commit failed: \n    %w", err).Error()
+	}
+	return output
+}
+
+func commit_func(message, author string) (string, error) {
 	if message == "" {
 		return "", fmt.Errorf("commit message cannot be empty")
 	}
@@ -21,7 +44,7 @@ func Commit(message, author string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cant load changes: %w", err)
 	} else if len(changes) == 0 { // if no changes return status
-		return Status()
+		return status()
 	}
 
 	pointer, err := pointers.LoadCurrentPointer()

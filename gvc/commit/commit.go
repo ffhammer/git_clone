@@ -8,15 +8,6 @@ import (
 	"git_clone/gvc/utils"
 )
 
-// type CommitMetdata struct {
-// 	ParentCommitHash string `json:"parent_commit_hash"`
-// 	BranchName       string `json:"branch_name"`
-// 	Author           string `json:"author"`
-// 	CommitMessage    string `json:"commit_message"`
-// 	Date             string `json:"date"`
-// 	TreeHash         string `json:"tree_hash"`
-// }
-
 func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
 	changes, err := index.LoadIndexChanges()
 	if err != nil {

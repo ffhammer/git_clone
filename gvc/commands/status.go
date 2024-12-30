@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func Status() (string, error) {
+func status() (string, error) {
 
 	pointer, err := pointers.LoadCurrentPointer()
 	if err != nil {
@@ -66,4 +66,12 @@ func Status() (string, error) {
 	}
 
 	return strings.Join(messages, "\n"), nil
+}
+
+func Status() string {
+	output, err := status()
+	if err != nil {
+		fmt.Errorf("status failed because %w", err).Error()
+	}
+	return output
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -10,21 +9,21 @@ import (
 )
 
 // Main usage information
-func printGlobalHelp() {
-	fmt.Println("Usage:")
-	fmt.Println("  gvc <command> [options]")
-	fmt.Println("\nCommands:")
-	fmt.Println("  init       Initialize a new repository")
-	fmt.Println("  add        Add files to the staging area")
-	fmt.Println("\nUse 'gvc <command> -h' for more information about a command.")
+func getGlobalHelp() string {
+	output := "Usage:\n"
+	output += "  gvc <command> [options]\n"
+	output += "\nCommands:\n"
+	output += "  init       Initialize a new repository\n"
+	output += "  add        Add files to the staging area\n"
+	output += "\nUse 'gvc <command> -h' for more information about a command.\n"
+	return output
 }
 
 func main() {
 	// Check if a subcommand is provided
 	if len(os.Args) < 2 {
-		fmt.Println("Error: expected a subcommand.")
-		printGlobalHelp()
-		os.Exit(1)
+		fmt.Print(getGlobalHelp())
+		os.Exit(0)
 	}
 
 	if err := utils.FindRepo(); os.Args[1] != "init" && err != nil {
@@ -33,110 +32,28 @@ func main() {
 	}
 
 	// Handle subcommands
+	var output string
 	switch os.Args[1] {
 	case "init":
-		initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-		initCmd.Parse(os.Args[2:])
+
 		err := commands.InitGVC()
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
+		output = err.Error()
 	case "add":
-		addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-		force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
-		addCmd.Parse(os.Args[2:])
-		if len(addCmd.Args()) < 1 {
-			fmt.Println("Error: expected file paths to add.")
-			addCmd.Usage()
-			os.Exit(1)
-		}
-		for _, filePath := range addCmd.Args() {
-			output := commands.AddFiles(filePath, *force)
-			fmt.Println(output)
-		}
+		output = commands.AddCommand(os.Args[2:])
 	case "rm":
-		rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
-		rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
-		rmRecursive := rmCmd.Bool("r", false, "")
-		rmForce := rmCmd.Bool("f", false, "")
-
-		rmCmd.Parse(os.Args[2:])
-		if len(rmCmd.Args()) < 1 {
-			fmt.Println("Error: expected file paths to rm.")
-			rmCmd.Usage()
-			os.Exit(1)
-		}
-		for _, filePath := range rmCmd.Args() {
-			output, err := commands.RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)
-
-			if err != nil {
-				fmt.Print(err)
-				os.Exit(1)
-			}
-
-			fmt.Println(output)
-		}
+		output = commands.RMCommand(os.Args[2:])
 	case "commit":
-		commitCmd := flag.NewFlagSet("commit", flag.ExitOnError)
-		commitMessage := commitCmd.String("m", "", "The commit message")
-		commitUser := commitCmd.String("u", "", "The commit user")
-		commitCmd.Parse(os.Args[2:])
-
-		if *commitMessage == "" {
-			fmt.Println("Error: commit message (-m) is required.")
-			commitCmd.Usage()
-			os.Exit(1)
-		}
-		if *commitUser == "" {
-			fmt.Println("Error: commit user (-u) is required.")
-			commitCmd.Usage()
-			os.Exit(1)
-		}
-
-		output, err := commands.Commit(*commitMessage, *commitUser)
-		if err != nil {
-			fmt.Print(err)
-			os.Exit(1)
-		}
-
-		fmt.Println(output)
-
+		output = commands.Commit()
 	case "status":
-
-		output, err := commands.Status()
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Print(output)
-
+		output = commands.Status()
 	case "restore":
-		restoreCmd := flag.NewFlagSet("restore", flag.ExitOnError)
-		// restoreSource := restoreCmd.String("source", "", "The branch or commit")
-		restoreStaged := restoreCmd.Bool("staged", false, "")
-		restoreWorktree := restoreCmd.Bool("worktree", false, "")
-
-		restoreCmd.Parse(os.Args[2:])
-
-		if len(restoreCmd.Args()) < 1 {
-			fmt.Println("Error: expected file paths to restore.")
-			restoreCmd.Usage()
-			os.Exit(1)
-		}
-
-		for _, filePath := range restoreCmd.Args() {
-			if err := commands.Restore(filePath, "HEAD", *restoreStaged, *restoreWorktree); err != nil {
-				fmt.Print(err)
-				os.Exit(1)
-			}
-		}
-
+		output = commands.Restore(os.Args[2:])
 	case "help", "-h", "--help":
-		printGlobalHelp()
+		output = getGlobalHelp()
 	default:
-		fmt.Printf("Error: unrecognized command: %s\n", os.Args[1])
-		printGlobalHelp()
-		os.Exit(1)
+		output = getGlobalHelp()
 	}
+
+	print(output)
+
 }

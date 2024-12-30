@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"flag"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/ignorefiles"
@@ -65,4 +66,21 @@ func AddFiles(filePath string, force bool) string {
 	}
 
 	return strings.Join(messages, "\n")
+}
+
+func AddCommand(args []string) string {
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
+	addCmd.Parse(args)
+	if len(addCmd.Args()) < 1 {
+		fmt.Println("Error: expected file paths to add.")
+		addCmd.Usage()
+		os.Exit(1)
+	}
+	output := ""
+
+	for _, filePath := range addCmd.Args() {
+		output += AddFiles(filePath, *force) + "\n"
+	}
+	return output
 }
