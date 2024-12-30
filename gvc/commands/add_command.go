@@ -53,7 +53,7 @@ func AddFiles(filePath string, force bool) string {
 
 	files, err := utils.FindMatchingFiles(filePath)
 	if err != nil {
-		return fmt.Sprintf("fatal: could not match files : %w", err)
+		return fmt.Errorf("fatal: could not match files : %w", err).Error()
 	}
 
 	messages := make([]string, 0)
@@ -80,7 +80,10 @@ func AddCommand(args []string) string {
 	output := ""
 
 	for _, filePath := range addCmd.Args() {
-		output += AddFiles(filePath, *force) + "\n"
+
+		if res := AddFiles(filePath, *force); res != "" {
+			return res
+		}
 	}
 	return output
 }

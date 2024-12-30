@@ -18,8 +18,8 @@ const (
 
 type LineChange struct {
 	Action        EditType
-	oldLineNumber int
-	newLineNumber int
+	OldLineNumber int
+	NewLineNumber int
 }
 
 func index_around(i int, N_Dia int) int {
@@ -127,19 +127,34 @@ func DiffPrinter(oldText, newText string, changes []LineChange, writer io.Writer
 	for _, change := range changes {
 		switch change.Action {
 		case Insert:
-			line := fmt.Sprintf("+ %s\n", newLines[change.newLineNumber])
+			line := fmt.Sprintf("+ %s\n", newLines[change.NewLineNumber])
 			fmt.Fprint(writer, color.New(color.FgGreen).Sprint(line))
 		case Delete:
-			line := fmt.Sprintf("- %s\n", oldLines[change.oldLineNumber])
+			line := fmt.Sprintf("- %s\n", oldLines[change.OldLineNumber])
 			fmt.Fprint(writer, color.New(color.FgRed).Sprint(line))
 		case Keep:
-			line := fmt.Sprintf("  %s\n", oldLines[change.oldLineNumber])
+			line := fmt.Sprintf("  %s\n", oldLines[change.OldLineNumber])
 			fmt.Fprint(writer, color.New(color.FgWhite).Sprint(line))
 		}
 	}
 }
 
 func MyersDiff(a, b []string) []LineChange {
+	if len(a) == 0 {
+		changes := make([]LineChange, len(b))
+		for i := range b {
+			changes[i] = LineChange{Insert, -1, i}
+		}
+		return changes
+	}
+
+	if len(b) == 0 {
+		changes := make([]LineChange, len(a))
+		for i := range a {
+			changes[i] = LineChange{Delete, i, -1}
+		}
+		return changes
+	}
 
 	return backtrack(getTraces(a, b), a, b)
 }

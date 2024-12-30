@@ -14,11 +14,11 @@ import (
 func BuildTreeFromIndex() (objectio.TreeMap, error) {
 	lastTree, err := pointers.GetLastCommitsTree()
 	if err != nil {
-		return objectio.TreeMap{}, err
+		return objectio.TreeMap{}, fmt.Errorf("error while building tree from index: %w", err)
 	}
 	changes, err := LoadIndexChanges()
 	if err != nil {
-		return objectio.TreeMap{}, err
+		return objectio.TreeMap{}, fmt.Errorf("error while building tree from index: %w", err)
 	}
 
 	for _, change := range changes {

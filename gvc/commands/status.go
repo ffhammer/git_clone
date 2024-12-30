@@ -33,7 +33,7 @@ func status() (string, error) {
 		messages = append(messages, "\n")
 	}
 
-	unstashedChanges, err := index.GetUnstagedChanges()
+	unstashedChanges, err := index.GetUnstagedChanges(true)
 	if err != nil {
 		return "", fmt.Errorf("could not load unstaged changes: %s", err)
 	}

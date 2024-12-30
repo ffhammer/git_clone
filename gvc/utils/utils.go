@@ -63,9 +63,13 @@ func GetFileSHA1(filePath string) (string, error) {
 }
 
 func GetStringSHA1(s string) string {
+	return GetBytesSHA1([]byte(s))
+}
+
+func GetBytesSHA1(s []byte) string {
 	h := sha1.New()
 
-	h.Write([]byte(s))
+	h.Write(s)
 
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
@@ -109,4 +113,19 @@ func GetCurrentTimeString() string {
 
 func IsGlob(v string) bool {
 	return strings.ContainsAny(v, "*?")
+}
+
+func IsValidFile(filePath string) bool {
+	fileInfo, err := os.Stat(filePath)
+	if err != nil || fileInfo.IsDir() {
+		return false
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	return true
 }

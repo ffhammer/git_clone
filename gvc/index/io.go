@@ -53,21 +53,21 @@ func LoadIndexChanges() (ChangeMap, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("could not load index changes: %w", err)
+		return nil, fmt.Errorf("error while loading index: could not load index changes: %w", err)
 	}
 	defer file.Close()
 
 	// Read the file content into a byte slice
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("could not read changes file: %w", err)
+		return nil, fmt.Errorf("error while loading index: could not read changes file: %w", err)
 	}
 
 	// Deserialize the JSON data into a ChangeMap
 	var changes ChangeMap
 	err = json.Unmarshal(data, &changes)
 	if err != nil {
-		return nil, fmt.Errorf("error deserializing changes map: %w", err)
+		return nil, fmt.Errorf("error while loading index: error deserializing changes map: %w", err)
 	}
 
 	return changes, nil

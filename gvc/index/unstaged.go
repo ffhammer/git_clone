@@ -5,7 +5,7 @@ import (
 	"git_clone/gvc/config"
 )
 
-func GetUnstagedChanges() ([]ChangeEntry, error) {
+func GetUnstagedChanges(includeAdditions bool) ([]ChangeEntry, error) {
 
 	cwdTree, err := BuildTreeFromDir()
 	if err != nil {
@@ -26,6 +26,10 @@ func GetUnstagedChanges() ([]ChangeEntry, error) {
 		} else if new_val.FileHash != val.FileHash {
 			changes = append(changes, ChangeEntry{FileHash: new_val.FileHash, OldHash: val.FileHash, RelPath: val.RelPath, Action: Modify})
 		}
+	}
+
+	if !includeAdditions {
+		return changes, nil
 	}
 
 	for key, val := range cwdTree {
