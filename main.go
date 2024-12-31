@@ -35,9 +35,7 @@ func main() {
 	var output string
 	switch os.Args[1] {
 	case "init":
-
-		err := commands.InitGVC()
-		output = err.Error()
+		output = commands.InitGVC()
 	case "add":
 		output = commands.AddCommand(os.Args[2:])
 	case "rm":
