@@ -1,6 +1,7 @@
 package objectio
 
 import (
+	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/utils"
 	"io"
@@ -22,6 +23,15 @@ func LoadCommit(fileHash string) (CommitMetdata, error) {
 	}
 
 	return LoadJsonObject[CommitMetdata](fileHash)
+}
+
+func LoadTreeByCommitHash(fileHash string) (TreeMap, error) {
+	commit, err := LoadCommit(fileHash)
+	if err != nil {
+		return nil, fmt.Errorf("error: could not retrieve commit '%s': %w", fileHash, err)
+	}
+
+	return LoadTree(commit.TreeHash)
 }
 
 func SaveCommit(commit CommitMetdata) (string, error) {

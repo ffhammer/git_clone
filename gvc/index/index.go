@@ -34,6 +34,7 @@ type ChangeEntry struct {
 }
 
 type ChangeMap map[string]ChangeEntry
+type ChangeList []ChangeEntry
 
 func partOfLastCommit(relPath, fileHash string) (fileStatus, string, error) {
 

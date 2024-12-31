@@ -11,4 +11,5 @@ const (
 	STARTING_BRANCH          = "main"
 	CurrentBranchPointerFile = "HEAD"
 	RefsFolder               = "refs"
+	HEAD                     = "HEAD"
 )

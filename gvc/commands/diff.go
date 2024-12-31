@@ -3,9 +3,11 @@ package commands
 import (
 	"flag"
 	"fmt"
+	"git_clone/gvc/config"
 	"git_clone/gvc/diff"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
+	"git_clone/gvc/pointers"
 	"git_clone/gvc/utils"
 	"os"
 	"strings"
@@ -49,12 +51,9 @@ func diffToIndex() (string, error) {
 	return builder.String(), nil
 }
 
-func diffIndexToCommit() (string, error) {
-	// i guess i can do this if i have compare trees
-	changes, err := index.LoadIndexChanges()
-	if err != nil {
-		return "", fmt.Errorf("error while loading unstaged changes: %w", err)
-	}
+func diffTreeToTree(oldTree, newTree objectio.TreeMap) (string, error) {
+
+	changes := index.TreeDiff(oldTree, newTree)
 
 	var builder strings.Builder
 
@@ -63,7 +62,7 @@ func diffIndexToCommit() (string, error) {
 		oldLines := []string{}
 		if change.Action != index.Add {
 			if file, err := objectio.RetrieveFile(change.OldHash); err != nil {
-				return "", fmt.Errorf("cant read file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+				return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
 
 			} else {
 				oldLines = utils.SplitLines(file)
@@ -75,7 +74,7 @@ func diffIndexToCommit() (string, error) {
 		if change.Action != index.Delete {
 
 			if file, err := objectio.RetrieveFile(change.NewHash); err != nil {
-				return "", fmt.Errorf("cant read file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+				return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
 
 			} else {
 				newLines = utils.SplitLines(file)
@@ -89,8 +88,28 @@ func diffIndexToCommit() (string, error) {
 			builder.WriteString(res)
 		}
 	}
+	return builder.String(), nil
 
-	return builder.String(), err
+}
+
+func diffIndexToCommit(commitToCompareTo string) (string, error) {
+	// i guess i can do this if i have compare trees
+
+	indexTree, err := index.BuildTreeFromIndex()
+	if err != nil {
+		return "", err
+	}
+
+	commitTree, err := pointers.LoadCommitTreeHeadAccpeted(commitToCompareTo)
+	if err != nil {
+		return "", fmt.Errorf("could not load tree for '%s': %w", commitToCompareTo, err)
+	}
+
+	output, err := diffTreeToTree(commitTree, indexTree)
+	if err != nil {
+		return "", fmt.Errorf("could not generate diff between trees: %w", err)
+	}
+	return output, nil
 }
 
 func DiffCommand(inputArgs []string) string {
@@ -131,7 +150,14 @@ func DiffCommand(inputArgs []string) string {
 		}
 		return output
 	} else if *cached {
-		output, err := diffIndexToCommit()
+		inputCommit := config.HEAD
+		if len(args) == 1 {
+			inputCommit = args[0]
+		} else if len(args) > 1 {
+			return "only a single commit arg accepted"
+		}
+
+		output, err := diffIndexToCommit(inputCommit)
 		if err != nil {
 			return err.Error()
 		}

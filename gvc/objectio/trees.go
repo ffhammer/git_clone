@@ -1,6 +1,7 @@
 package objectio
 
 import (
+	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/utils"
 	"io"
@@ -19,7 +20,11 @@ func LoadTree(fileHash string) (TreeMap, error) {
 		return TreeMap{}, nil
 	}
 
-	return LoadJsonObject[TreeMap](fileHash)
+	val, err := LoadJsonObject[TreeMap](fileHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not load tree '%s': %w", fileHash, err)
+	}
+	return val, nil
 }
 
 func SaveTree(tree TreeMap) (string, error) {

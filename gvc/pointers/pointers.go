@@ -82,3 +82,11 @@ func GetLastCommitsTree() (objectio.TreeMap, error) {
 
 	return val, nil
 }
+
+func LoadCommitTreeHeadAccpeted(commitHash string) (objectio.TreeMap, error) {
+	if commitHash == config.HEAD {
+		return GetLastCommitsTree()
+	}
+
+	return objectio.LoadTreeByCommitHash(commitHash)
+}
