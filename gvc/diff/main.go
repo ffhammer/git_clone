@@ -5,10 +5,11 @@ import (
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/utils"
+	"os"
 	"strings"
 )
 
-func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions bool, pathsToMatch []string) (string, error) {
+func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions bool, pathsToMatch []string, loadNewFilesFromDisk bool) (string, error) {
 
 	oldTree := oldTreeInput
 	newTree := newTreeInput
@@ -46,12 +47,24 @@ func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions boo
 		newLines := []string{}
 		if change.Action != index.Delete {
 
-			if file, err := objectio.RetrieveFile(change.NewHash); err != nil {
-				return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+			var file string
+
+			if loadNewFilesFromDisk {
+				if fileAsBytes, err := os.ReadFile(utils.RelPathToAbs(change.RelPath)); err != nil {
+					fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+				} else {
+					file = string(fileAsBytes)
+				}
 
 			} else {
-				newLines = utils.SplitLines(file)
+				var err error
+				file, err = objectio.RetrieveFile(change.NewHash)
+				if err != nil {
+					return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+
+				}
 			}
+			newLines = utils.SplitLines(file)
 		}
 
 		if res, err := GenerateFileDiff(change.OldHash, change.RelPath, change.NewHash, change.RelPath, oldLines, newLines); err != nil {

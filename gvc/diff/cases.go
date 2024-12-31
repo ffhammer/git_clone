@@ -18,7 +18,7 @@ func ToIndex(absInputPaths []string) (string, error) {
 		return "", err
 	}
 
-	output, err := TreeToTree(indexTree, dirTree, true, absInputPaths) // include unstaged addition
+	output, err := TreeToTree(indexTree, dirTree, true, absInputPaths, true) // include unstaged addition
 	if err != nil {
 		return "", fmt.Errorf("could not generate diff between trees: %w", err)
 	}
@@ -36,7 +36,7 @@ func CommitToWorkingDirectory(commitToCompareTo string, absInputPaths []string) 
 		return "", fmt.Errorf("could not load tree for '%s': %w", commitToCompareTo, err)
 	}
 
-	output, err := TreeToTree(commitTree, dirTree, true, absInputPaths) // include unstaged addition
+	output, err := TreeToTree(commitTree, dirTree, true, absInputPaths, true) // include unstaged addition
 	if err != nil {
 		return "", fmt.Errorf("could not generate diff between trees: %w", err)
 	}
@@ -56,7 +56,7 @@ func IndexToCommit(commitToCompareTo string, absInputPaths []string) (string, er
 		return "", fmt.Errorf("could not load tree for '%s': %w", commitToCompareTo, err)
 	}
 
-	output, err := TreeToTree(commitTree, indexTree, false, absInputPaths)
+	output, err := TreeToTree(commitTree, indexTree, false, absInputPaths, false)
 	if err != nil {
 		return "", fmt.Errorf("could not generate diff between trees: %w", err)
 	}
@@ -76,7 +76,7 @@ func CommitToCommit(oldCommit, newCommit string, absInputPaths []string) (string
 		return "", fmt.Errorf("could not load tree for '%s': %w", newCommit, err)
 	}
 
-	output, err := TreeToTree(oldTree, newTree, false, absInputPaths)
+	output, err := TreeToTree(oldTree, newTree, false, absInputPaths, false)
 	if err != nil {
 		return "", fmt.Errorf("could not generate diff between trees: %w", err)
 	}

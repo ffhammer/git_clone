@@ -35,6 +35,11 @@ func LoadTreeByCommitHash(fileHash string) (TreeMap, error) {
 }
 
 func IsValidCommit(fileHash string) bool {
+
+	if fileHash == config.HEAD {
+		return true
+	}
+
 	if _, err := LoadCommit(fileHash); err != nil {
 		return false
 	}
