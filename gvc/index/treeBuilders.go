@@ -26,7 +26,7 @@ func BuildTreeFromIndex() (objectio.TreeMap, error) {
 		case Delete:
 			delete(lastTree, change.RelPath)
 		case Add, Modify:
-			lastTree[change.RelPath] = objectio.TreeEntry{RelPath: change.RelPath, FileHash: change.FileHash}
+			lastTree[change.RelPath] = objectio.TreeEntry{RelPath: change.RelPath, FileHash: change.NewHash}
 		}
 	}
 	return lastTree, nil

@@ -21,7 +21,7 @@ func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
 		switch val.Action {
 		case index.Add:
 
-			object, err := objectio.LoadObject(val.FileHash)
+			object, err := objectio.LoadObject(val.NewHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("can't load object for file '%s': %w", val.RelPath, err)
 			}
@@ -34,14 +34,12 @@ func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
 			}
 			nDels += utils.CountLines(object)
 		case index.Modify:
-			fmt.Printf("modify (: %s, hash %s\n", val.RelPath, val.OldHash)
-
 			oldObject, err := objectio.LoadObject(val.OldHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("cant load object for file '%s': %w", val.RelPath, err)
 			}
 
-			newObject, err := objectio.LoadObject(val.FileHash)
+			newObject, err := objectio.LoadObject(val.NewHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("cant load object for file '%s': %w", val.RelPath, err)
 			}

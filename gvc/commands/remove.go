@@ -11,10 +11,12 @@ import (
 )
 
 func RemoveFile(filePath string, cached, recursive, force bool) (string, error) {
-	isdir, err := utils.IsDir(filePath)
-	if err != nil {
-		return "", err
-	} else if isdir && !recursive {
+	// ich muss die pfade matchen mit dem tree wenn cached, also schon die gelöschten
+	fileInfo, err := os.Stat(filePath)
+	if os.IsNotExist(err) && cached {
+	} else if err != nil {
+		return "", fmt.Errorf("could not access %s: %w", filePath, err)
+	} else if fileInfo.IsDir() && !recursive {
 		return "", fmt.Errorf("fatal: not removing '%s' recursively without -r", filePath)
 	}
 
@@ -66,7 +68,7 @@ func RemoveFile(filePath string, cached, recursive, force bool) (string, error) 
 		return "", fmt.Errorf("fatal: pathspec '%s' did not match any files", filePath)
 	}
 
-	if isdir && !cached && allMatches {
+	if !cached && allMatches && fileInfo.IsDir() {
 		if err := os.RemoveAll(filePath); err != nil {
 			return "", fmt.Errorf("fatal: error while deleting dir '%s' at the end %w", filePath, err)
 		}
@@ -94,7 +96,7 @@ func RMCommand(args []string) string {
 		newOutput, err := RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)
 
 		if err != nil {
-			output += fmt.Errorf("error for rile '%s': %w", filePath, err).Error()
+			output += fmt.Errorf("error for file '%s': %w", filePath, err).Error()
 			return output
 		}
 

@@ -39,7 +39,7 @@ func diffToIndex() (string, error) {
 			}
 		}
 
-		if res, err := diff.GenerateFileDiff(change.OldHash, change.RelPath, change.FileHash, change.RelPath, oldLines, newLines); err != nil {
+		if res, err := diff.GenerateFileDiff(change.OldHash, change.RelPath, change.NewHash, change.RelPath, oldLines, newLines); err != nil {
 			return "", fmt.Errorf("error generating diff file for '%s': %w", change.RelPath, err)
 
 		} else {
@@ -47,6 +47,50 @@ func diffToIndex() (string, error) {
 		}
 	}
 	return builder.String(), nil
+}
+
+func diffIndexToCommit() (string, error) {
+	// i guess i can do this if i have compare trees
+	changes, err := index.LoadIndexChanges()
+	if err != nil {
+		return "", fmt.Errorf("error while loading unstaged changes: %w", err)
+	}
+
+	var builder strings.Builder
+
+	for _, change := range changes {
+
+		oldLines := []string{}
+		if change.Action != index.Add {
+			if file, err := objectio.RetrieveFile(change.OldHash); err != nil {
+				return "", fmt.Errorf("cant read file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+
+			} else {
+				oldLines = utils.SplitLines(file)
+			}
+
+		}
+
+		newLines := []string{}
+		if change.Action != index.Delete {
+
+			if file, err := objectio.RetrieveFile(change.NewHash); err != nil {
+				return "", fmt.Errorf("cant read file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+
+			} else {
+				newLines = utils.SplitLines(file)
+			}
+		}
+
+		if res, err := diff.GenerateFileDiff(change.OldHash, change.RelPath, change.NewHash, change.RelPath, oldLines, newLines); err != nil {
+			return "", fmt.Errorf("error generating diff file for '%s': %w", change.RelPath, err)
+
+		} else {
+			builder.WriteString(res)
+		}
+	}
+
+	return builder.String(), err
 }
 
 func DiffCommand(inputArgs []string) string {
@@ -87,8 +131,11 @@ func DiffCommand(inputArgs []string) string {
 		}
 		return output
 	} else if *cached {
-		// not impl
-		return "not implemented"
+		output, err := diffIndexToCommit()
+		if err != nil {
+			return err.Error()
+		}
+		return output
 
 	}
 

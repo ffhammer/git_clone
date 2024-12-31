@@ -27,7 +27,7 @@ const (
 
 type ChangeEntry struct {
 	RelPath    string       `json:"relpath"`
-	FileHash   string       `json:"filehash"`
+	NewHash    string       `json:"filehash"`
 	OldHash    string       `json:"oldHash"`
 	EditedTime int64        `json:"editTime"`
 	Action     ChangeAction `json:"actiion"`
@@ -69,9 +69,9 @@ func AddFile(relPath, fileHash string) error {
 	var newEntry ChangeEntry
 
 	if status == MODIFIED_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Modify}
+		newEntry = ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Modify}
 	} else if status == NEW_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, FileHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Add}
+		newEntry = ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Add}
 	} else { // in case of neither added nor modifed -> do nothing
 		return nil
 	}
@@ -108,7 +108,7 @@ func RemoveFile(relPath, fileHash string, force, cached bool) error {
 		return &FileNotPartOfIndexOrTreeError{}
 	}
 
-	newEntry := ChangeEntry{RelPath: relPath, OldHash: oldHash, FileHash: config.DOES_NOT_EXIST_HASH, EditedTime: time.Now().Unix(), Action: Delete}
+	newEntry := ChangeEntry{RelPath: relPath, OldHash: oldHash, NewHash: config.DOES_NOT_EXIST_HASH, EditedTime: time.Now().Unix(), Action: Delete}
 	changes[relPath] = newEntry
 
 	err = saveIndexChanges(changes)

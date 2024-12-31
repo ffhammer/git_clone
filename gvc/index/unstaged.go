@@ -22,9 +22,9 @@ func GetUnstagedChanges(includeAdditions bool) ([]ChangeEntry, error) {
 
 		new_val, ok := cwdTree[key]
 		if !ok {
-			changes = append(changes, ChangeEntry{FileHash: config.DOES_NOT_EXIST_HASH, OldHash: val.FileHash, RelPath: val.RelPath, Action: Delete})
+			changes = append(changes, ChangeEntry{NewHash: config.DOES_NOT_EXIST_HASH, OldHash: val.FileHash, RelPath: val.RelPath, Action: Delete})
 		} else if new_val.FileHash != val.FileHash {
-			changes = append(changes, ChangeEntry{FileHash: new_val.FileHash, OldHash: val.FileHash, RelPath: val.RelPath, Action: Modify})
+			changes = append(changes, ChangeEntry{NewHash: new_val.FileHash, OldHash: val.FileHash, RelPath: val.RelPath, Action: Modify})
 		}
 	}
 
@@ -35,7 +35,7 @@ func GetUnstagedChanges(includeAdditions bool) ([]ChangeEntry, error) {
 	for key, val := range cwdTree {
 		_, ok := stagedTree[key]
 		if !ok {
-			changes = append(changes, ChangeEntry{FileHash: val.FileHash, OldHash: config.DOES_NOT_EXIST_HASH, RelPath: val.RelPath, Action: Add})
+			changes = append(changes, ChangeEntry{NewHash: val.FileHash, OldHash: config.DOES_NOT_EXIST_HASH, RelPath: val.RelPath, Action: Add})
 		}
 	}
 
