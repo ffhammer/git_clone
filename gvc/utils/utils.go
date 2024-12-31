@@ -14,7 +14,7 @@ import (
 
 func MkdirIgnoreExists(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.Mkdir(path, os.ModePerm)
+		return os.MkdirAll(path, os.ModePerm)
 	}
 	return nil
 }
