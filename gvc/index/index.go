@@ -3,7 +3,8 @@ package index
 import (
 	"fmt"
 	"git_clone/gvc/config"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
+
 	"time"
 )
 
@@ -38,7 +39,7 @@ type ChangeList []ChangeEntry
 
 func partOfLastCommit(relPath, fileHash string) (fileStatus, string, error) {
 
-	treeMap, err := pointers.GetLastCommitsTree()
+	treeMap, err := refs.GetLastCommitsTree()
 	if err != nil {
 		return NEW_FILE, "", err
 	}

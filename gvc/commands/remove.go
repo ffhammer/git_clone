@@ -5,9 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"git_clone/gvc/index"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 	"os"
+
 	"strings"
 )
 
@@ -22,7 +23,7 @@ func RemoveFile(filePath string, cached, recursive, force bool) (string, error) 
 		return "", fmt.Errorf("fatal: not removing '%s' recursively without -r", filePath)
 	}
 
-	tree, err := pointers.GetLastCommitsTree()
+	tree, err := refs.GetLastCommitsTree()
 	if err != nil {
 		return "", err
 	}

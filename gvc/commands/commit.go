@@ -6,7 +6,7 @@ import (
 	"git_clone/gvc/commit"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 	"os"
 )
@@ -47,7 +47,7 @@ func commit_func(message, author string) (string, error) {
 		return status()
 	}
 
-	pointer, err := pointers.LoadCurrentPointer()
+	pointer, err := refs.LoadCurrentPointer()
 	if err != nil {
 		return "", fmt.Errorf("cant load pointer %w", err)
 	}
@@ -81,7 +81,7 @@ func commit_func(message, author string) (string, error) {
 		return "", fmt.Errorf("cant save commit: %w", err)
 	}
 
-	if err := pointers.SaveCurrentPointer(pointer); err != nil {
+	if err := refs.SaveCurrentPointer(pointer); err != nil {
 		return "", fmt.Errorf("cant save current pointer: %w", err)
 	}
 

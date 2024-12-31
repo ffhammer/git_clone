@@ -3,8 +3,9 @@ package commands
 import (
 	"fmt"
 	"git_clone/gvc/config"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
+
 	"os"
 	"path/filepath"
 )
@@ -31,8 +32,8 @@ func InitGVC() string {
 
 	utils.RepoDir = config.OWN_FOLDER_NAME
 
-	inital_metdata := pointers.CurrentBranchPointer{ParentCommitHash: config.DOES_NOT_EXIST_HASH, BranchName: config.STARTING_BRANCH}
-	err = pointers.SaveCurrentPointer(inital_metdata)
+	inital_metdata := refs.CurrentBranchPointer{ParentCommitHash: config.DOES_NOT_EXIST_HASH, BranchName: config.STARTING_BRANCH}
+	err = refs.SaveCurrentPointer(inital_metdata)
 	if err != nil {
 		return fmt.Errorf("failed to save ref pointer: %w", err).Error()
 	}

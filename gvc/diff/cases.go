@@ -3,7 +3,7 @@ package diff
 import (
 	"fmt"
 	"git_clone/gvc/index"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 )
 
 func ToIndex(absInputPaths []string) (string, error) {
@@ -31,7 +31,7 @@ func CommitToWorkingDirectory(commitToCompareTo string, absInputPaths []string) 
 		return "", err
 	}
 
-	commitTree, err := pointers.LoadCommitTreeHeadAccpeted(commitToCompareTo)
+	commitTree, err := refs.LoadCommitTreeHeadAccpeted(commitToCompareTo)
 	if err != nil {
 		return "", fmt.Errorf("could not load tree for '%s': %w", commitToCompareTo, err)
 	}
@@ -51,7 +51,7 @@ func IndexToCommit(commitToCompareTo string, absInputPaths []string) (string, er
 		return "", err
 	}
 
-	commitTree, err := pointers.LoadCommitTreeHeadAccpeted(commitToCompareTo)
+	commitTree, err := refs.LoadCommitTreeHeadAccpeted(commitToCompareTo)
 	if err != nil {
 		return "", fmt.Errorf("could not load tree for '%s': %w", commitToCompareTo, err)
 	}
@@ -66,12 +66,12 @@ func IndexToCommit(commitToCompareTo string, absInputPaths []string) (string, er
 func CommitToCommit(oldCommit, newCommit string, absInputPaths []string) (string, error) {
 	// i guess i can do this if i have compare trees
 
-	oldTree, err := pointers.LoadCommitTreeHeadAccpeted(oldCommit)
+	oldTree, err := refs.LoadCommitTreeHeadAccpeted(oldCommit)
 	if err != nil {
 		return "", fmt.Errorf("could not load tree for '%s': %w", oldCommit, err)
 	}
 
-	newTree, err := pointers.LoadCommitTreeHeadAccpeted(newCommit)
+	newTree, err := refs.LoadCommitTreeHeadAccpeted(newCommit)
 	if err != nil {
 		return "", fmt.Errorf("could not load tree for '%s': %w", newCommit, err)
 	}

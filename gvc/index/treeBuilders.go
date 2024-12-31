@@ -5,14 +5,14 @@ import (
 	"git_clone/gvc/config"
 	"git_clone/gvc/ignorefiles"
 	"git_clone/gvc/objectio"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 	"io/fs"
 	"path/filepath"
 )
 
 func BuildTreeFromIndex() (objectio.TreeMap, error) {
-	lastTree, err := pointers.GetLastCommitsTree()
+	lastTree, err := refs.GetLastCommitsTree()
 	if err != nil {
 		return objectio.TreeMap{}, fmt.Errorf("error while building tree from index: %w", err)
 	}

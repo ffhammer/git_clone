@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
+
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
@@ -45,7 +46,7 @@ func restore(absPath string, source string, staged, worktTree bool) error {
 		return nil
 	}
 
-	tree, err := pointers.GetLastCommitsTree()
+	tree, err := refs.GetLastCommitsTree()
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package pointers
+package refs
 
 import (
 	"fmt"

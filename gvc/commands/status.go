@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 	"git_clone/gvc/index"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"strings"
 
 	"github.com/fatih/color"
@@ -11,7 +11,7 @@ import (
 
 func status() (string, error) {
 
-	pointer, err := pointers.LoadCurrentPointer()
+	pointer, err := refs.LoadCurrentPointer()
 	if err != nil {
 		return "", fmt.Errorf("could not load pointer: %s", err)
 	}

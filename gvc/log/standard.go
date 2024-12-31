@@ -5,8 +5,9 @@ import (
 	"git_clone/gvc/config"
 	"git_clone/gvc/diff"
 	"git_clone/gvc/objectio"
-	"git_clone/gvc/pointers"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
+
 	"strings"
 	"time"
 
@@ -67,7 +68,7 @@ func StandardLog(patch bool, since, until, author, grep string) (string, error) 
 		}
 	}
 
-	current, err := pointers.GetLastCommit()
+	current, err := refs.GetLastCommit()
 	if err != nil {
 		return "", err
 	}
