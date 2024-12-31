@@ -26,7 +26,7 @@ func TreeDiff(oldTree, newTree objectio.TreeMap, ignoreAdditions bool) ChangeLis
 	for newKey, newVal := range newTree {
 		_, ok := oldTree[newKey]
 		if !ok {
-			changes = append(changes, ChangeEntry{RelPath: newKey, NewHash: newVal.RelPath, OldHash: config.DOES_NOT_EXIST_HASH, Action: Add})
+			changes = append(changes, ChangeEntry{RelPath: newKey, NewHash: newVal.FileHash, OldHash: config.DOES_NOT_EXIST_HASH, Action: Add})
 		}
 
 	}

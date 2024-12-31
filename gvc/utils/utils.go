@@ -108,7 +108,16 @@ func CountLines(data []byte) int {
 }
 
 func GetCurrentTimeString() string {
-	return time.Now().Format("2006-01-02 15:04:05")
+	return time.Now().Format("2006-01-02-15:04:05")
+}
+
+func ParseTimeString(timeStr string) (time.Time, error) {
+	layout := "2006-01-02-15:04:05"
+	parsedTime, err := time.Parse(layout, timeStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error parsing time string: %w", err)
+	}
+	return parsedTime, nil
 }
 
 func IsGlob(v string) bool {

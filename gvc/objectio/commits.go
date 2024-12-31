@@ -22,7 +22,11 @@ func LoadCommit(fileHash string) (CommitMetdata, error) {
 		return CommitMetdata{TreeHash: config.DOES_NOT_EXIST_HASH}, nil
 	}
 
-	return LoadJsonObject[CommitMetdata](fileHash)
+	val, err := LoadJsonObject[CommitMetdata](fileHash)
+	if err != nil {
+		return CommitMetdata{}, fmt.Errorf("error loading commit '%s': %w", fileHash, err)
+	}
+	return val, nil
 }
 
 func LoadTreeByCommitHash(fileHash string) (TreeMap, error) {

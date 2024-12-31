@@ -48,12 +48,14 @@ func main() {
 		output = commands.Restore(os.Args[2:])
 	case "diff":
 		output = commands.DiffCommand(os.Args[2:])
+	case "log":
+		output = commands.LogCommand(os.Args[2:])
 	case "help", "-h", "--help":
 		output = getGlobalHelp()
 	default:
 		output = getGlobalHelp()
 	}
 
-	print(output)
+	fmt.Fprintln(os.Stderr, output)
 
 }

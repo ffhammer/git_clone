@@ -60,7 +60,7 @@ func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions boo
 				var err error
 				file, err = objectio.RetrieveFile(change.NewHash)
 				if err != nil {
-					return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
+					return "", fmt.Errorf("cant retrieve file '%s' %s: %w", utils.RelPathToAbs(change.RelPath), change.NewHash, err)
 
 				}
 			}
