@@ -5,7 +5,7 @@ import (
 	"git_clone/gvc/objectio"
 )
 
-func TreeDiff(oldTree, newTree objectio.TreeMap) ChangeList {
+func TreeDiff(oldTree, newTree objectio.TreeMap, ignoreAdditions bool) ChangeList {
 
 	changes := make(ChangeList, 0)
 
@@ -17,6 +17,10 @@ func TreeDiff(oldTree, newTree objectio.TreeMap) ChangeList {
 		} else if oldVal.FileHash != newVal.FileHash {
 			changes = append(changes, ChangeEntry{RelPath: oldKey, NewHash: newVal.FileHash, OldHash: oldVal.FileHash, Action: Modify})
 		}
+	}
+
+	if ignoreAdditions {
+		return changes
 	}
 
 	for newKey, newVal := range newTree {

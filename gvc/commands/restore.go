@@ -10,51 +10,7 @@ import (
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
-
-	"github.com/gobwas/glob"
 )
-
-func matchFileWithMapStringKey[T any](relPath string, m map[string]T) []string {
-	files := make([]string, 0)
-
-	if utils.IsGlob(relPath) {
-		g := glob.MustCompile(relPath)
-
-		for k, _ := range m {
-			if g.Match(k) {
-				files = append(files, k)
-			}
-		}
-
-		return files
-	}
-
-	querySplittedParts := utils.SplitPath(relPath)
-
-	for k, _ := range m {
-		allMatched := true
-		keySplittedParts := utils.SplitPath(k)
-
-		if len(querySplittedParts) > len(keySplittedParts) {
-			continue
-		}
-
-		for i := 0; i < len(querySplittedParts); i++ {
-
-			allMatched = allMatched && (querySplittedParts[i] == keySplittedParts[i])
-			if !allMatched {
-				break
-			}
-		}
-
-		if allMatched {
-			files = append(files, k)
-		}
-
-	}
-
-	return files
-}
 
 func restore(absPath string, source string, staged, worktTree bool) error {
 	// for the moment souce is not implemented
@@ -72,7 +28,7 @@ func restore(absPath string, source string, staged, worktTree bool) error {
 			return fmt.Errorf("cant load changes with index %w", err)
 		}
 
-		matches := matchFileWithMapStringKey(relPath, changes)
+		matches := utils.MatchFileWithMapStringKey(relPath, changes)
 
 		if len(matches) == 0 {
 			return fmt.Errorf("pathspec '%s' did not match any file(s) known to git", absPath)
@@ -94,7 +50,7 @@ func restore(absPath string, source string, staged, worktTree bool) error {
 		return err
 	}
 
-	matches := matchFileWithMapStringKey(relPath, tree)
+	matches := utils.MatchFileWithMapStringKey(relPath, tree)
 
 	if len(matches) == 0 {
 		return fmt.Errorf("pathspec '%s' did not match any file(s) known to git", absPath)

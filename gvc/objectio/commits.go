@@ -34,6 +34,13 @@ func LoadTreeByCommitHash(fileHash string) (TreeMap, error) {
 	return LoadTree(commit.TreeHash)
 }
 
+func IsValidCommit(fileHash string) bool {
+	if _, err := LoadCommit(fileHash); err != nil {
+		return false
+	}
+	return true
+}
+
 func SaveCommit(commit CommitMetdata) (string, error) {
 	reader, err := SerializeObject(commit)
 	if err != nil {

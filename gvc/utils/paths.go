@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/gobwas/glob"
 )
 
 func FindMatchingFiles(filePath string) ([]string, error) {
@@ -78,4 +81,70 @@ func MakePathRelativeToRepo(RepoDIr string, filePath string) (string, error) {
 	}
 
 	return filepath.Clean(relPath), nil
+}
+
+func MatchFileWithMapStringKey[T any](relPath string, m map[string]T) []string {
+	files := make([]string, 0)
+
+	if IsGlob(relPath) {
+		g := glob.MustCompile(relPath)
+
+		for k, _ := range m {
+			if g.Match(k) {
+				files = append(files, k)
+			}
+		}
+
+		return files
+	}
+
+	querySplittedParts := SplitPath(relPath)
+
+	for k, _ := range m {
+		allMatched := true
+		keySplittedParts := SplitPath(k)
+
+		if len(querySplittedParts) > len(keySplittedParts) {
+			continue
+		}
+
+		for i := 0; i < len(querySplittedParts); i++ {
+
+			allMatched = allMatched && (querySplittedParts[i] == keySplittedParts[i])
+			if !allMatched {
+				break
+			}
+		}
+
+		if allMatched {
+			files = append(files, k)
+		}
+
+	}
+
+	return files
+}
+
+func FilterRelPathKeyMapWithAbsPaths[T any](m map[string]T, absPaths []string) (map[string]T, error) {
+
+	if len(absPaths) == 0 {
+		return nil, errors.New("this functios is intented not be called with emty paths")
+	}
+
+	filteredMap := make(map[string]T, 0)
+
+	for _, absPath := range absPaths {
+		relPath, err := MakePathRelativeToRepo(RepoDir, absPath)
+		if err != nil {
+			return nil, fmt.Errorf("could not generate relative path for '%s': %w", absPath, err)
+		}
+
+		for _, matchedPath := range MatchFileWithMapStringKey(relPath, m) {
+
+			filteredMap[matchedPath] = m[matchedPath]
+		}
+
+	}
+	return filteredMap, nil
+
 }
