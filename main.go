@@ -50,12 +50,17 @@ func main() {
 		output = commands.DiffCommand(os.Args[2:])
 	case "log":
 		output = commands.LogCommand(os.Args[2:])
+	case "branch":
+		output = commands.BranchCommand(os.Args[2:])
 	case "help", "-h", "--help":
 		output = getGlobalHelp()
 	default:
 		output = getGlobalHelp()
 	}
 
-	fmt.Fprintln(os.Stderr, output)
+	if len(output) > 0 {
+
+		fmt.Fprintln(os.Stderr, output)
+	}
 
 }
