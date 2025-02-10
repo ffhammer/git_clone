@@ -71,7 +71,7 @@ func status() (string, error) {
 func Status() string {
 	output, err := status()
 	if err != nil {
-		fmt.Errorf("status failed because %w", err).Error()
+		return fmt.Errorf("status failed because %w", err).Error()
 	}
 	return output
 }

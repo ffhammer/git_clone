@@ -52,6 +52,8 @@ func main() {
 		output = commands.LogCommand(os.Args[2:])
 	case "branch":
 		output = commands.BranchCommand(os.Args[2:])
+	case "checkout":
+		output = commands.CheckoutCommand(os.Args[2:])
 	case "help", "-h", "--help":
 		output = getGlobalHelp()
 	default:

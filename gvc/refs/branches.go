@@ -12,6 +12,24 @@ import (
 	"github.com/fatih/color"
 )
 
+func UpdateHead(newBranchName string) error {
+	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
+
+	err := os.WriteFile(pathToCurrentPointer, []byte(newBranchName), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed updating head file %s: %w", pathToCurrentPointer, err)
+	}
+	return nil
+}
+
+func LoadCurrentBranchName() (string, error) {
+	pointer, err := LoadCurrentPointer()
+	if err != nil {
+		return "", fmt.Errorf("error loading current branch name:\n\tcannot load current pointer: %w", err)
+	}
+	return pointer.BranchName, nil
+}
+
 func ListBranches() (string, error) {
 	refsFolder := filepath.Join(utils.RepoDir, config.RefsFolder)
 
@@ -20,9 +38,9 @@ func ListBranches() (string, error) {
 		return "", fmt.Errorf("cannot list refs directory '%s': %w", refsFolder, err)
 	}
 
-	pointer, err := LoadCurrentPointer()
+	currentBranch, err := LoadCurrentBranchName()
 	if err != nil {
-		return "", fmt.Errorf("cannot load current pointer: %w", err)
+		return "", err
 	}
 
 	branches := make([]string, 0)
@@ -41,7 +59,7 @@ func ListBranches() (string, error) {
 	var builder strings.Builder
 
 	for index, branch := range branches {
-		if branch == pointer.BranchName {
+		if branch == currentBranch {
 			builder.WriteString("* " + color.GreenString("%s", branch))
 		} else {
 			builder.WriteString(fmt.Sprintf("  %s", branch))

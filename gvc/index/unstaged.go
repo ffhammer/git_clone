@@ -2,42 +2,19 @@ package index
 
 import (
 	"fmt"
-	"git_clone/gvc/config"
+	"git_clone/gvc/refs"
 )
 
 func GetUnstagedChanges(includeAdditions bool) ([]ChangeEntry, error) {
 
 	cwdTree, err := BuildTreeFromDir()
 	if err != nil {
-		return nil, fmt.Errorf("error building tree from dir: \n%s", err)
+		return nil, fmt.Errorf("error computing uncommited tree changes:\n building tree from dir: \n%s", err)
 	}
-	stagedTree, err := BuildTreeFromIndex()
+	commitTree, err := refs.GetLastCommitsTree()
 	if err != nil {
-		return nil, fmt.Errorf("error building tree from index: \n%s", err)
+		return nil, fmt.Errorf("error computing uncommited tree changes:\n building tree from index: \n%s", err)
 	}
 
-	changes := make([]ChangeEntry, 0)
-
-	for key, val := range stagedTree {
-
-		new_val, ok := cwdTree[key]
-		if !ok {
-			changes = append(changes, ChangeEntry{NewHash: config.DOES_NOT_EXIST_HASH, OldHash: val.FileHash, RelPath: val.RelPath, Action: Delete})
-		} else if new_val.FileHash != val.FileHash {
-			changes = append(changes, ChangeEntry{NewHash: new_val.FileHash, OldHash: val.FileHash, RelPath: val.RelPath, Action: Modify})
-		}
-	}
-
-	if !includeAdditions {
-		return changes, nil
-	}
-
-	for key, val := range cwdTree {
-		_, ok := stagedTree[key]
-		if !ok {
-			changes = append(changes, ChangeEntry{NewHash: val.FileHash, OldHash: config.DOES_NOT_EXIST_HASH, RelPath: val.RelPath, Action: Add})
-		}
-	}
-
-	return changes, nil
+	return TreeDiff(commitTree, cwdTree, includeAdditions), nil
 }
