@@ -54,6 +54,8 @@ func main() {
 		output = commands.BranchCommand(os.Args[2:])
 	case "checkout":
 		output = commands.CheckoutCommand(os.Args[2:])
+	case "merge":
+		output = commands.MergeCommand(os.Args[2:])
 	case "help", "-h", "--help":
 		output = getGlobalHelp()
 	default:
