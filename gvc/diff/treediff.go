@@ -2,8 +2,8 @@ package diff
 
 import (
 	"fmt"
-	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
+	"git_clone/gvc/treediff"
 	"git_clone/gvc/utils"
 	"os"
 	"strings"
@@ -27,14 +27,15 @@ func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions boo
 		}
 	}
 
-	changes := index.TreeDiff(oldTree, newTree, ignoreAdditions)
+	var changes treediff.ChangeList = treediff.ChangeList{}
+	treediff.TreeDiff[treediff.ChangeList](&changes, oldTree, newTree, ignoreAdditions)
 
 	var builder strings.Builder
 
 	for _, change := range changes {
 
 		oldLines := []string{}
-		if change.Action != index.Add {
+		if change.Action != treediff.Add {
 			if file, err := objectio.RetrieveFile(change.OldHash); err != nil {
 				return "", fmt.Errorf("cant retrieve file '%s': %w", utils.RelPathToAbs(change.RelPath), err)
 
@@ -45,7 +46,7 @@ func TreeToTree(oldTreeInput, newTreeInput objectio.TreeMap, ignoreAdditions boo
 		}
 
 		newLines := []string{}
-		if change.Action != index.Delete {
+		if change.Action != treediff.Delete {
 
 			var file string
 

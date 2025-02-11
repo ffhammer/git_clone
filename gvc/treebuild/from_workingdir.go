@@ -1,4 +1,4 @@
-package index
+package treebuild
 
 import (
 	"fmt"
@@ -11,33 +11,18 @@ import (
 	"path/filepath"
 )
 
-func BuildTreeFromIndex() (objectio.TreeMap, error) {
-	lastTree, err := refs.GetLastCommitsTree()
-	if err != nil {
-		return objectio.TreeMap{}, fmt.Errorf("error while building tree from index: %w", err)
-	}
-	changes, err := LoadIndexChanges()
-	if err != nil {
-		return objectio.TreeMap{}, fmt.Errorf("error while building tree from index: %w", err)
-	}
-
-	for _, change := range changes {
-		switch change.Action {
-		case Delete:
-			delete(lastTree, change.RelPath)
-		case Add, Modify:
-			lastTree[change.RelPath] = objectio.TreeEntry{RelPath: change.RelPath, FileHash: change.NewHash}
-		}
-	}
-	return lastTree, nil
-}
 func BuildTreeFromDir() (objectio.TreeMap, error) {
 	directory := utils.GetBasePath() // Use RepoDir directly for clarity
+
+	lastCommitTree, err := refs.GetLastCommitsTree()
+	if err != nil {
+		return nil, err
+	}
 
 	// Initialize the tree
 	tree := make(objectio.TreeMap)
 
-	err := filepath.Walk(directory, func(absPath string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(directory, func(absPath string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -69,9 +54,8 @@ func BuildTreeFromDir() (objectio.TreeMap, error) {
 
 		// if ignored, check if the file is already tracked (like with add -f). in case of new file return nil -> skip
 		if ignorefiles.IsIgnored(relPath) {
-			if status, _, err := partOfLastCommit(relPath, fileHash); err != nil {
-				return fmt.Errorf("cant check if part of last commit '%s': %w", absPath, err)
-			} else if status == NEW_FILE {
+
+			if _, ok := lastCommitTree[relPath]; !ok {
 				return nil
 			}
 		}

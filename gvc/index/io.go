@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"git_clone/gvc/config"
+	"git_clone/gvc/treediff"
 	"git_clone/gvc/utils"
 	"io"
 	"os"
@@ -19,7 +20,7 @@ func getChangesPath() string {
 	return path.Join(getIndexPath(), config.INDEX_CHANGES)
 }
 
-func saveIndexChanges(changes ChangeMap) error {
+func saveIndexChanges(changes treediff.ChangeMap) error {
 
 	data, err := json.Marshal(changes)
 	if err != nil {
@@ -42,14 +43,14 @@ func saveIndexChanges(changes ChangeMap) error {
 
 }
 
-func LoadIndexChanges() (ChangeMap, error) {
+func LoadIndexChanges() (treediff.ChangeMap, error) {
 	changesPath := getChangesPath()
 
 	// Open the file for reading
 	file, err := os.Open(changesPath)
 	if errors.Is(err, os.ErrNotExist) {
-		// If the file does not exist, return an empty ChangeMap
-		return ChangeMap{}, nil
+		// If the file does not exist, return an empty treediff.ChangeMap
+		return treediff.ChangeMap{}, nil
 	}
 
 	if err != nil {
@@ -63,8 +64,8 @@ func LoadIndexChanges() (ChangeMap, error) {
 		return nil, fmt.Errorf("error while loading index: could not read changes file: %w", err)
 	}
 
-	// Deserialize the JSON data into a ChangeMap
-	var changes ChangeMap
+	// Deserialize the JSON data into a treediff.ChangeMap
+	var changes treediff.ChangeMap
 	err = json.Unmarshal(data, &changes)
 	if err != nil {
 		return nil, fmt.Errorf("error while loading index: error deserializing changes map: %w", err)

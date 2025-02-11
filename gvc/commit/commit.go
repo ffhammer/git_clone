@@ -5,6 +5,7 @@ import (
 	"git_clone/gvc/diffalgos"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
+	"git_clone/gvc/treediff"
 	"git_clone/gvc/utils"
 )
 
@@ -19,21 +20,21 @@ func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
 
 	for _, val := range changes {
 		switch val.Action {
-		case index.Add:
+		case treediff.Add:
 
 			object, err := objectio.LoadObject(val.NewHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("can't load object for file '%s': %w", val.RelPath, err)
 			}
 			nInsertions += utils.CountLines(object)
-		case index.Delete:
+		case treediff.Delete:
 			fmt.Printf("Delete (: %s, hash %s\n", val.RelPath, val.OldHash)
 			object, err := objectio.LoadObject(val.OldHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("can't load object for file '%s': %w", val.RelPath, err)
 			}
 			nDels += utils.CountLines(object)
-		case index.Modify:
+		case treediff.Modify:
 			oldObject, err := objectio.LoadObject(val.OldHash)
 			if err != nil {
 				return 0, 0, fmt.Errorf("cant load object for file '%s': %w", val.RelPath, err)

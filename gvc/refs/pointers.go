@@ -91,15 +91,21 @@ func LoadCommitTreeHeadAccpeted(commitHash string) (objectio.TreeMap, error) {
 	return objectio.LoadTreeByCommitHash(commitHash)
 }
 
-func LoadBranchTree(branchName string) (objectio.TreeMap, error) {
-
+func GetBranchCommitHash(branchName string) (string, error) {
 	filePath := filepath.Join(utils.RepoDir, config.RefsFolder, branchName)
 
 	file_bytes, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("cant load branch ref for '%s' error: '%w'", branchName, err)
+		return "", fmt.Errorf("cant load branch ref for '%s' error: '%w'", branchName, err)
 	}
 
-	commitHash := string(file_bytes)
+	return string(file_bytes), nil
+}
+
+func LoadBranchTree(branchName string) (objectio.TreeMap, error) {
+	commitHash, err := GetBranchCommitHash(branchName)
+	if err != nil {
+		return nil, err
+	}
 	return objectio.LoadTreeByCommitHash(commitHash)
 }

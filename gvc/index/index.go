@@ -4,18 +4,9 @@ import (
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/treediff"
 
 	"time"
-)
-
-type ChangeAction string
-
-const (
-	Add    ChangeAction = "added"
-	Modify ChangeAction = "modified"
-	Delete ChangeAction = "deleted"
-	// Stash    ChangeAction = "stash"
-	// Unmerged ChangeAction = "unmerged"
 )
 
 type fileStatus string
@@ -25,17 +16,6 @@ const (
 	NEW_FILE      fileStatus = "new"
 	MODIFIED_FILE fileStatus = "delete"
 )
-
-type ChangeEntry struct {
-	RelPath    string       `json:"relpath"`
-	NewHash    string       `json:"filehash"`
-	OldHash    string       `json:"oldHash"`
-	EditedTime int64        `json:"editTime"`
-	Action     ChangeAction `json:"actiion"`
-}
-
-type ChangeMap map[string]ChangeEntry
-type ChangeList []ChangeEntry
 
 func partOfLastCommit(relPath, fileHash string) (fileStatus, string, error) {
 
@@ -68,12 +48,12 @@ func AddFile(relPath, fileHash string) error {
 		return err
 	}
 
-	var newEntry ChangeEntry
+	var newEntry treediff.ChangeEntry
 
 	if status == MODIFIED_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Modify}
+		newEntry = treediff.ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: treediff.Modify}
 	} else if status == NEW_FILE {
-		newEntry = ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: Add}
+		newEntry = treediff.ChangeEntry{RelPath: relPath, NewHash: fileHash, OldHash: oldHash, EditedTime: time.Now().Unix(), Action: treediff.Add}
 	} else { // in case of neither added nor modifed -> do nothing
 		return nil
 	}
@@ -110,7 +90,7 @@ func RemoveFile(relPath, fileHash string, force, cached bool) error {
 		return &FileNotPartOfIndexOrTreeError{}
 	}
 
-	newEntry := ChangeEntry{RelPath: relPath, OldHash: oldHash, NewHash: config.DOES_NOT_EXIST_HASH, EditedTime: time.Now().Unix(), Action: Delete}
+	newEntry := treediff.ChangeEntry{RelPath: relPath, OldHash: oldHash, NewHash: config.DOES_NOT_EXIST_HASH, EditedTime: time.Now().Unix(), Action: treediff.Delete}
 	changes[relPath] = newEntry
 
 	err = saveIndexChanges(changes)
@@ -122,7 +102,7 @@ func RemoveFile(relPath, fileHash string, force, cached bool) error {
 }
 
 func ClearAllChanges() error {
-	return saveIndexChanges(ChangeMap{})
+	return saveIndexChanges(treediff.ChangeMap{})
 }
 
 func RemoveFromIndex(relPath string) error {

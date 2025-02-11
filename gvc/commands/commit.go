@@ -7,6 +7,7 @@ import (
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/treebuild"
 	"git_clone/gvc/utils"
 	"os"
 )
@@ -52,7 +53,7 @@ func commit_func(message, author string) (string, error) {
 		return "", fmt.Errorf("cant load pointer %w", err)
 	}
 
-	tree, err := index.BuildTreeFromIndex()
+	tree, err := treebuild.BuildTreeFromIndex()
 	if err != nil {
 		return "", fmt.Errorf("cant generate tree: %w", err)
 	}

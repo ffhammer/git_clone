@@ -2,18 +2,18 @@ package diff
 
 import (
 	"fmt"
-	"git_clone/gvc/index"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/treebuild"
 )
 
 func ToIndex(absInputPaths []string) (string, error) {
 
-	dirTree, err := index.BuildTreeFromDir()
+	dirTree, err := treebuild.BuildTreeFromDir()
 	if err != nil {
 		return "", err
 	}
 
-	indexTree, err := index.BuildTreeFromIndex()
+	indexTree, err := treebuild.BuildTreeFromIndex()
 	if err != nil {
 		return "", err
 	}
@@ -26,7 +26,7 @@ func ToIndex(absInputPaths []string) (string, error) {
 }
 
 func CommitToWorkingDirectory(commitToCompareTo string, absInputPaths []string) (string, error) {
-	dirTree, err := index.BuildTreeFromDir()
+	dirTree, err := treebuild.BuildTreeFromDir()
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func CommitToWorkingDirectory(commitToCompareTo string, absInputPaths []string) 
 func IndexToCommit(commitToCompareTo string, absInputPaths []string) (string, error) {
 	// i guess i can do this if i have compare trees
 
-	indexTree, err := index.BuildTreeFromIndex()
+	indexTree, err := treebuild.BuildTreeFromIndex()
 	if err != nil {
 		return "", err
 	}

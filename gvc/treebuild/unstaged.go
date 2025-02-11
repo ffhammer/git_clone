@@ -1,10 +1,11 @@
-package index
+package treebuild
 
 import (
 	"fmt"
+	"git_clone/gvc/treediff"
 )
 
-func GetUnstagedChanges(ignoreAdditions bool) ([]ChangeEntry, error) {
+func GetUnstagedChanges(ignoreAdditions bool) (treediff.ChangeList, error) {
 	// get changes that are not in the index currently
 	newTree, err := BuildTreeFromDir()
 	if err != nil {
@@ -15,5 +16,7 @@ func GetUnstagedChanges(ignoreAdditions bool) ([]ChangeEntry, error) {
 		return nil, fmt.Errorf("error computing uncommited tree changes:\n building tree from index: \n%s", err)
 	}
 
-	return TreeDiff(oldTree, newTree, ignoreAdditions), nil
+	var cl treediff.ChangeList = treediff.ChangeList{}
+	treediff.TreeDiff[treediff.ChangeList](&cl, oldTree, newTree, ignoreAdditions)
+	return cl, nil
 }

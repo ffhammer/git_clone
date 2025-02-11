@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"git_clone/gvc/index"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/treebuild"
+	"git_clone/gvc/treediff"
 	"strings"
 
 	"github.com/fatih/color"
@@ -33,17 +35,17 @@ func status() (string, error) {
 		messages = append(messages, "\n")
 	}
 
-	unstashedChanges, err := index.GetUnstagedChanges(false)
+	unstashedChanges, err := treebuild.GetUnstagedChanges(false)
 	if err != nil {
 		return "", fmt.Errorf("could not load unstaged changes: %s", err)
 	}
 
 	addingIndex := 0
 
-	if len(unstashedChanges) > 0 && unstashedChanges[0].Action != index.Add {
+	if len(unstashedChanges) > 0 && unstashedChanges[0].Action != treediff.Add {
 		messages = append(messages, "Changes not staged for commit:\n    (use 'gvc add/rm <file>...' to update what will be committed)\n    (use 'gvc restore <file>...' to discard changes in working directory)")
 
-		for i := 0; i < len(unstashedChanges) && unstashedChanges[i].Action != index.Add; i++ {
+		for i := 0; i < len(unstashedChanges) && unstashedChanges[i].Action != treediff.Add; i++ {
 			change := unstashedChanges[i]
 			messages = append(messages, color.RedString(fmt.Sprintf("    %-9s    %s", change.Action+":", change.RelPath)))
 			addingIndex++
