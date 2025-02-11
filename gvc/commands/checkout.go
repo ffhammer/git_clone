@@ -13,22 +13,19 @@ import (
 
 func checkForConflicts(changes index.ChangeList) error {
 
-	uncomitted, err := index.GetUncommitedChanges()
+	change_set, err := index.LoadIndexChanges()
 	if err != nil {
 		return err
 	}
 
-	unstaged, err := index.GetUnstagedChanges(true)
+	unstaged, err := index.GetUnstagedChanges(false)
 	if err != nil {
 		return err
 	}
 
-	setForEffiency := make(map[string]bool, len(uncomitted))
-	for _, i := range uncomitted {
-		setForEffiency[i.RelPath] = false
-	}
+	// simply add to dict -> treat it as set, for easier lookup
 	for _, i := range unstaged {
-		setForEffiency[i.RelPath] = false
+		change_set[i.RelPath] = index.ChangeEntry{}
 	}
 
 	var builder strings.Builder
@@ -36,9 +33,9 @@ func checkForConflicts(changes index.ChangeList) error {
 	return_error := false
 	for _, change := range changes {
 
-		if _, ok := setForEffiency[change.RelPath]; ok {
+		if _, ok := change_set[change.RelPath]; ok {
 			return_error = true
-			builder.WriteString(fmt.Sprintf("\t\t-%s", change.RelPath))
+			builder.WriteString(fmt.Sprintf("\t%s\n", change.RelPath))
 		}
 	}
 
@@ -64,7 +61,7 @@ func checkout(branchName string) error {
 	}
 
 	// with this ordering a "deletion" would also entail a deletion
-	changes := index.TreeDiff(currentTree, origianalTree, true)
+	changes := index.TreeDiff(currentTree, origianalTree, false)
 	if err := checkForConflicts(changes); err != nil {
 		return err
 	}
@@ -96,7 +93,7 @@ func checkout(branchName string) error {
 func CheckoutCommand(inputArgs []string) string {
 
 	flagset := flag.NewFlagSet("checkout", flag.ExitOnError)
-	bFlag := flag.Bool("b", false, "create new branch")
+	bFlag := flagset.Bool("b", false, "create new branch")
 
 	if err := flagset.Parse(inputArgs); err != nil {
 		return err.Error()
