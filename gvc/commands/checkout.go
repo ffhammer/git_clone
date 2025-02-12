@@ -31,6 +31,12 @@ func CheckoutCommand(inputArgs []string) string {
 
 	branchName := args[0]
 
+	if inmerge, err := refs.CurrentlyInMerge(); err != nil {
+		return fmt.Errorf("error getting merge info: %w", err).Error()
+	} else if inmerge {
+		return "error: you are currently in a merge"
+	}
+
 	if branchName == currentBranch {
 		return fmt.Sprintf("You are already on '%s'", branchName)
 	}

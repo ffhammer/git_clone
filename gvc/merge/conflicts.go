@@ -1,17 +1,12 @@
 package merge
 
-import "git_clone/gvc/treediff"
+import (
+	"git_clone/gvc/refs"
+	"git_clone/gvc/treediff"
+)
 
-type mergeConflict struct {
-	RelPath  string
-	ActionA  treediff.ChangeAction
-	NewHashA string
-	ActionB  treediff.ChangeAction
-	NewHashB string
-}
-
-func findMergeConflicts(mapA, mapB treediff.ChangeMap) []mergeConflict {
-	conflicts := make([]mergeConflict, 0)
+func findMergeConflicts(mapA, mapB treediff.ChangeMap) []refs.MergeConflict {
+	conflicts := make([]refs.MergeConflict, 0)
 
 	for relPath, changeA := range mapA {
 
@@ -28,7 +23,7 @@ func findMergeConflicts(mapA, mapB treediff.ChangeMap) []mergeConflict {
 			continue
 		}
 
-		conflicts = append(conflicts, mergeConflict{RelPath: relPath,
+		conflicts = append(conflicts, refs.MergeConflict{RelPath: relPath,
 			ActionA: changeA.Action, ActionB: changeB.Action, NewHashA: changeA.NewHash, NewHashB: changeB.NewHash})
 	}
 

@@ -12,4 +12,5 @@ const (
 	CurrentBranchPointerFile = "HEAD"
 	RefsFolder               = "refs"
 	HEAD                     = "HEAD"
+	MERGE_INFO_PATH          = "MERGE"
 )

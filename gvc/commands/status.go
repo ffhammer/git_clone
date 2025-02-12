@@ -21,6 +21,18 @@ func status() (string, error) {
 	messages := make([]string, 0)
 	messages = append(messages, fmt.Sprintf("On branch %s\n\n", pointer.BranchName))
 
+	if inmerge, err := refs.CurrentlyInMerge(); err != nil {
+		return "", fmt.Errorf("error getting merge info: %w", err)
+	} else if inmerge {
+
+		mergeMetaData, err := refs.GetMergeMetaData()
+		if err != nil {
+			return "", err
+		}
+		messages = append(messages, "You have unmerged paths.\n\t(fix conflicts and run 'git commit')\n\t(use 'git merge --abort' to abort the merge)")
+		messages = append(messages, mergeMetaData.MEARGE_MESSAGE)
+	}
+
 	changes, err := index.LoadIndexChanges()
 	if err != nil {
 		return "", fmt.Errorf("could not load changes: %s", err)
