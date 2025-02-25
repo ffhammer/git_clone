@@ -19,9 +19,9 @@ type MergeConflict struct {
 }
 
 type MergeMetaData struct {
-	MEARGE_HEAD    string `json:"MERGE_HEAD"`
-	MEARGE_MESSAGE string `json:"MERGE_MESSAGE"`
-	conflicts      []MergeConflict
+	MERGE_HEAD    string `json:"MERGE_HEAD"`
+	MERGE_MESSAGE string `json:"MERGE_MESSAGE"`
+	Conflicts     []MergeConflict
 }
 
 func SaveMergeMetaData(data MergeMetaData) error {
@@ -69,4 +69,14 @@ func GetMergeMetaData() (MergeMetaData, error) {
 	}
 
 	return data, nil
+}
+
+func DelMergeMetaMData() error {
+	path := filepath.Join(utils.RepoDir, config.MERGE_INFO_PATH)
+	err := os.Remove(path)
+	if err != nil {
+		return nil
+	}
+
+	return fmt.Errorf("could not delete merge meta data '%s' %w", path, err)
 }

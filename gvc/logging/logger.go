@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"errors"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/settings"
@@ -64,7 +65,7 @@ func shouldLog(current, msg settings.LogLevel) bool {
 	return levels[msg] >= levels[current]
 }
 
-func Log(message string, level settings.LogLevel) {
+func log_message(message string, level settings.LogLevel) {
 	if err := initLogger(); err != nil {
 		fmt.Printf("can't log because of logger error: %v\n", err)
 		return
@@ -73,4 +74,44 @@ func Log(message string, level settings.LogLevel) {
 	if shouldLog(Logger.level, level) {
 		Logger.log.Printf("[%s] %s", level, message)
 	}
+}
+
+func ErrorF(format string, a ...any) error {
+	err := fmt.Errorf(format, a...)
+	log_message(err.Error(), settings.ERROR)
+	return err
+}
+
+func Error(err error) error {
+	log_message(err.Error(), settings.ERROR)
+	return err
+}
+
+func NewError(desc string) error {
+	err := errors.New(desc)
+	log_message(desc, settings.ERROR)
+	return err
+}
+
+func Debug(message string) {
+	log_message(message, settings.DEBUGGING)
+}
+
+func DebugF(format string, a ...any) {
+	log_message(fmt.Sprintf(format, a...), settings.DEBUGGING)
+}
+
+func Info(message string) {
+	log_message(message, settings.INFO)
+}
+func InfoF(format string, a ...any) {
+	log_message(fmt.Sprintf(format, a...), settings.INFO)
+}
+
+func Warn(message string) {
+	log_message(message, settings.WARNING)
+}
+
+func WarnF(format string, a ...any) {
+	log_message(fmt.Sprintf(format, a...), settings.WARNING)
 }
