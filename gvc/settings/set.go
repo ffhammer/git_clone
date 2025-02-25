@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"git_clone/gvc/config"
-	"git_clone/gvc/logging"
 	"git_clone/gvc/utils"
 	"io"
 	"os"
@@ -14,10 +13,19 @@ import (
 	"strings"
 )
 
+type LogLevel string
+
+const (
+	INFO      LogLevel = "INFO"
+	DEBUGGING LogLevel = "DEBUGGING"
+	WARNING   LogLevel = "WARNING"
+	ERROR     LogLevel = "ERROR"
+)
+
 // Settings represents user configuration
 type Settings struct {
-	User     string           `json:"User"`
-	LogLevel logging.LogLevel `json:"LogLevel"`
+	User     string   `json:"User"`
+	LogLevel LogLevel `json:"LogLevel"`
 }
 
 // Set updates a setting field based on an input string in "key=value" format.
