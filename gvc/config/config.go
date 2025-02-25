@@ -13,4 +13,6 @@ const (
 	RefsFolder               = "refs"
 	HEAD                     = "HEAD"
 	MERGE_INFO_PATH          = "MERGE"
+	LOG_PATH                 = ".log"
+	SETTINGS_PATH            = "settings.json"
 )

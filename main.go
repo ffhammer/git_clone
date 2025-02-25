@@ -56,6 +56,8 @@ func main() {
 		output = commands.CheckoutCommand(os.Args[2:])
 	case "merge":
 		output = commands.MergeCommand(os.Args[2:])
+	case "set":
+		output = commands.SettingsCommand(os.Args[2:])
 	case "help", "-h", "--help":
 		output = getGlobalHelp()
 	default:
