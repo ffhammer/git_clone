@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/settings"
 	"git_clone/gvc/utils"
 
 	"os"
@@ -36,6 +37,11 @@ func InitGVC() string {
 	err = refs.SaveCurrentPointer(inital_metdata)
 	if err != nil {
 		return fmt.Errorf("failed to save ref pointer: %w", err).Error()
+	}
+
+	setting := settings.Settings{LogLevel: settings.INFO, User: config.DOES_NOT_EXIST_HASH}
+	if err := settings.SaveSettings(setting); err != nil {
+		return fmt.Errorf("failed saving default settings: %w", err).Error()
 	}
 
 	return fmt.Sprintf("Initialized a new repository at %s", config.OWN_FOLDER_NAME)

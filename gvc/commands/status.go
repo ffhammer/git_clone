@@ -30,7 +30,7 @@ func status() (string, error) {
 			return "", err
 		}
 		messages = append(messages, "You have unmerged paths.\n\t(fix conflicts and run 'git commit')\n\t(use 'git merge --abort' to abort the merge)")
-		messages = append(messages, mergeMetaData.MEARGE_MESSAGE)
+		messages = append(messages, mergeMetaData.MERGE_MESSAGE)
 	}
 
 	changes, err := index.LoadIndexChanges()

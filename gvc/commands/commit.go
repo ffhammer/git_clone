@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"git_clone/gvc/commit"
+	"git_clone/gvc/config"
 	"git_clone/gvc/index"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/refs"
+	"git_clone/gvc/settings"
 	"git_clone/gvc/treebuild"
 	"git_clone/gvc/utils"
 	"os"
@@ -21,11 +23,21 @@ func Commit() string {
 	if *commitMessage == "" {
 		return "Error: commit message (-m) is required."
 	}
-	if *commitUser == "" {
-		return "Error: commit user (-u) is required."
+
+	cfg, err := settings.LoadSettings()
+	if err != nil {
+		return err.Error()
 	}
 
-	output, err := commit_func(*commitMessage, *commitUser)
+	if cfg.User == config.DOES_NOT_EXIST_HASH && *commitUser == "" {
+		return "Error: commit user (-u) is required, since not set in settings\nUse gvc set --set User=username."
+	}
+
+	if *commitUser != "" {
+		cfg.User = *commitUser
+	}
+
+	output, err := commit_func(*commitMessage, cfg.User)
 
 	if err != nil {
 		return fmt.Errorf("commit failed: \n    %w", err).Error()
