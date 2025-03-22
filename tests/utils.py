@@ -67,6 +67,14 @@ class TestDir:
             print("-" * len(header))
             print()
 
+    def list_dir(self) -> list[str]:
+        """Print all file contents except in .gvc directory."""
+        files = [
+            p for p in self.path.glob("**/*") if p.is_file() and ".gvc" not in p.parts
+        ]
+
+        return files
+
     def cleanup(self):
         """Clean up the temporary directory."""
         self.dir.cleanup()
@@ -82,3 +90,11 @@ class TestDir:
 
         print(f"{COLOR_GREEN}Content of file {relative_path}:{COLOR_RESET}")
         print(f"{'#'*20}\n{file_path.read_text()}\n{'#'*20}")
+
+    def read_file(self, relative_path: str) -> str:
+        file_path = self.path / relative_path
+
+        if not file_path.exists():
+            raise ValueError(f"file '{relative_path}' does not exist")
+
+        return file_path.read_text()

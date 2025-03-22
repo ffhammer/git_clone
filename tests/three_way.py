@@ -1,7 +1,3 @@
-import os
-import tempfile
-import subprocess
-from pathlib import Path
 from utils import TestDir
 from dataclasses import dataclass
 from typing import Optional
@@ -9,8 +5,8 @@ from typing import Optional
 
 @dataclass
 class TestCase:
-    name: str  # will corespond to file name
-    content_begin: Optional[str]  # if None -> none existing
+    name: str
+    content_begin: Optional[str]
     content_new: Optional[str]
     content_main: Optional[str]
     final_file: Optional[str]
@@ -19,169 +15,122 @@ class TestCase:
 
 test_cases: list[TestCase] = [
     TestCase(
-        name="untouched",
-        content_begin="will stay same",
-        content_new="will stay same",
-        content_main="will stay same",
-        final_file="will stay same",
+        "untouched",
+        "will stay same",
+        "will stay same",
+        "will stay same",
+        "will stay same",
     ),
     TestCase(
-        name="both_modified_conflict",
-        content_begin="base content",
-        content_new="modified in new branch",
-        content_main="modified in main branch",
-        final_file="CONFLICT",
-        trigger_conflict=True,
+        "both_modified_conflict",
+        "base content",
+        "modified in new branch",
+        "modified in main branch",
+        "CONFLICT",
+        True,
+    ),
+    TestCase("both_delete", "some content", None, None, None),
+    TestCase(
+        "deleted_in_new_unchanged_old", "some content", None, "some content", None
     ),
     TestCase(
-        name="both_delete",
-        content_begin="some content",
-        content_new=None,
-        content_main=None,
-        final_file=None,
+        "deleted_in_old_unchanged_new", "some content", "some content", None, None
     ),
     TestCase(
-        name="deleted_in_new_unchanged_old",
-        content_begin="some content",
-        content_new=None,
-        content_main="some content",
-        final_file=None,
+        "deleted_in_new_modified_in_old",
+        "some content",
+        None,
+        "modified in main",
+        "CONFLICT",
+        True,
     ),
     TestCase(
-        name="deleted_in_old_unchanged_new",
-        content_begin="some content",
-        content_new="some content",
-        content_main=None,
-        final_file=None,
+        "deleted_in_old_modified_in_new",
+        "some content",
+        "modified in new",
+        None,
+        "CONFLICT",
+        True,
     ),
+    TestCase("new_in_new", None, "new file content", None, "new file content"),
+    TestCase("new_in_old", None, None, "new file content", "new file content"),
     TestCase(
-        name="deleted_in_new_modified_in_old",
-        content_begin="some content",
-        content_new=None,
-        content_main="modified in main",
-        final_file="CONFLICT",
-        trigger_conflict=True,
-    ),
-    TestCase(
-        name="deleted_in_old_modified_in_new",
-        content_begin="some content",
-        content_new="modified in new",
-        content_main=None,
-        final_file="CONFLICT",
-        trigger_conflict=True,
-    ),
-    TestCase(
-        name="new_in_new",
-        content_begin=None,
-        content_new="new file content",
-        content_main=None,
-        final_file="new file content",
-    ),
-    TestCase(
-        name="new_in_old",
-        content_begin=None,
-        content_new=None,
-        content_main="new file content",
-        final_file="new file content",
-    ),
-    TestCase(
-        name="both_modified_identical",
-        content_begin="base content",
-        content_new="identical modification",
-        content_main="identical modification",
-        final_file="identical modification",
+        "both_modified_identical",
+        "base content",
+        "identical modification",
+        "identical modification",
+        "identical modification",
     ),
 ]
 
 
-# Initialize test environment
+def apply_state(test_dir: TestDir, attr: str, base_attr: str) -> None:
+    add_cmd, del_cmd = [], []
+    for case in test_cases:
+        base = getattr(case, base_attr)
+        content = getattr(case, attr)
+
+        if base is None and content is None:
+            continue
+        if base is not None and content is None:
+            del_cmd.append(case.name)
+        elif base != content:
+            test_dir.write_file(case.name, content)
+            add_cmd.append(case.name)
+
+    if add_cmd:
+        test_dir.run_command(f"add {' '.join(add_cmd)}")
+    if del_cmd:
+        test_dir.run_command(f"rm {' '.join(del_cmd)}")
+
+
+def init_repo(test_dir: TestDir) -> None:
+    test_dir.run_command("init")
+    test_dir.run_command("set --set User=name")
+    test_dir.run_command("set --set LogLevel=DEBUGGING")
+
+
+def make_initial_commit(test_dir: TestDir) -> None:
+    names = [c.name for c in test_cases if c.content_begin is not None]
+    for case in test_cases:
+        if case.content_begin is not None:
+            test_dir.write_file(case.name, case.content_begin)
+    if names:
+        test_dir.run_command(f"add {' '.join(names)}")
+    test_dir.run_command('commit -m "Initial commit on main"')
+
+
+def verify_results(test_dir: TestDir) -> None:
+    for case in test_cases:
+        if case.trigger_conflict:
+            test_dir.print_file(case.name)
+        elif case.final_file is None:
+            assert (
+                case.name not in test_dir.list_dir()
+            ), f"{case.name} should be deleted"
+        else:
+            content = test_dir.read_file(case.name)
+            assert (
+                content == case.final_file
+            ), f"{case.name}: expected '{case.final_file}', got '{content}'"
+
+
 test_dir = TestDir()
+init_repo(test_dir)
+make_initial_commit(test_dir)
 
-test_dir.run_command("init")
-test_dir.run_command("set --set User=name")
-test_dir.run_command("set --set LogLevel=DEBUGGING")
-
-# initial commit
-add_command = "add"
-for case in test_cases:
-
-    if case.content_begin is None:
-        continue
-
-    test_dir.write_file(case.name, case.content_begin)
-    add_command = f"{add_command} {case.name}"
-
-test_dir.run_command(add_command)
-test_dir.run_command('commit -m "Initial commit on main"')
-
-
-# feature
 test_dir.run_command("checkout -b feature")
-
-add_command = "add"
-del_command = "rm"
-for case in test_cases:
-
-    # both none -> skip
-    if case.content_begin is None and case.content_new is None:
-        continue
-
-    # delet
-    if case.content_begin is not None and case.content_new is None:
-        del_command = f"{del_command} {case.name}"
-        continue
-
-    # add or modify
-    if case.content_begin != case.content_new:
-        test_dir.write_file(case.name, case.content_new)
-        add_command = f"{add_command} {case.name}"
-
-test_dir.run_command(add_command)
-test_dir.run_command(del_command)
+apply_state(test_dir, "content_new", "content_begin")
 test_dir.run_command("status")
 test_dir.run_command('commit -m "Commit on feature branch"')
 
-
-# Step 3: Switch back to main. and change
 test_dir.run_command("checkout main")
-
-add_command = "add"
-del_command = "rm"
-for case in test_cases:
-
-    # both none -> skip
-    if case.content_begin is None and case.content_main is None:
-        continue
-
-    # delet
-    if case.content_begin is not None and case.content_main is None:
-        del_command = f"{del_command} {case.name}"
-        continue
-
-    # add or modify
-    if case.content_begin != case.content_main:
-        test_dir.write_file(case.name, case.content_main)
-        add_command = f"{add_command} {case.name}"
-
-test_dir.run_command(add_command)
-test_dir.run_command(del_command)
-
+apply_state(test_dir, "content_main", "content_begin")
 test_dir.run_command("status")
 test_dir.run_command('commit -m "Commit on main branch"')
 
-# Step 4: Merge branch 'feature' into main (this should trigger a three-way merge conflict).
 test_dir.run_command("merge feature")
 test_dir.run_command("status")
 
-for case in test_cases:
-
-    if not case.trigger_conflict:
-        continue
-
-    test_dir.print_file(case.name)
-
-
-# test_dir.print_file(".gvc/.log")
-
-# Clean up after test.
+verify_results(test_dir)
 test_dir.cleanup()

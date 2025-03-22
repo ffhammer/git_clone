@@ -104,6 +104,9 @@ func Merge(currentBranch, sourceBranchName string) string {
 		return logging.ErrorF("error: Your local changes to the following files would be overwritten by merge:\n%w", err).Error()
 	}
 
+	if err := addFileAdditionsOfNewBranch(changesA, changesB); err != nil {
+		return err.Error()
+	}
 	if err := prepareMergeState(mergeConflicts, currentBranch, sourceBranchHash, sourceBranchName); err != nil {
 		return logging.ErrorF("error: preparing merge state :\n%w", err).Error()
 	}
