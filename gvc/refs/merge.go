@@ -8,7 +8,35 @@ import (
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
+	"sync"
 )
+
+var (
+	InMergeState bool
+	once         sync.Once
+	initError    error
+)
+
+func CheckForMergeState() error {
+	once.Do(func() {
+		// Get the current working directory
+		path := filepath.Join(utils.RepoDir, config.MERGE_INFO_PATH)
+
+		_, err := os.Stat(path)
+
+		if err == nil {
+			InMergeState = true
+			return
+		} else if os.IsNotExist(err) {
+			InMergeState = false
+			return
+		}
+
+		initError = err
+	})
+
+	return initError
+}
 
 type MergeConflict struct {
 	RelPath  string                `json:"relpath"`
@@ -39,20 +67,6 @@ func SaveMergeMetaData(data MergeMetaData) error {
 	}
 
 	return nil
-}
-
-func CurrentlyInMerge() (bool, error) {
-	path := filepath.Join(utils.RepoDir, config.MERGE_INFO_PATH)
-
-	_, err := os.Stat(path)
-
-	if err == nil {
-		return true, nil
-	} else if os.IsNotExist(err) {
-		return false, nil
-	}
-
-	return false, nil
 }
 
 func GetMergeMetaData() (MergeMetaData, error) {

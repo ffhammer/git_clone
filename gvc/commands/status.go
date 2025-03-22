@@ -21,9 +21,7 @@ func status() (string, error) {
 	messages := make([]string, 0)
 	messages = append(messages, fmt.Sprintf("On branch %s\n\n", pointer.BranchName))
 
-	if inmerge, err := refs.CurrentlyInMerge(); err != nil {
-		return "", fmt.Errorf("error getting merge info: %w", err)
-	} else if inmerge {
+	if refs.InMergeState {
 
 		mergeMetaData, err := refs.GetMergeMetaData()
 		if err != nil {

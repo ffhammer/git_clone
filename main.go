@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"git_clone/gvc/commands"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 )
 
@@ -29,6 +30,12 @@ func main() {
 	if err := utils.FindRepo(); os.Args[1] != "init" && err != nil {
 		fmt.Println("fatal: not a gvc repository (or any of the parent directories): .gvc")
 		os.Exit(1)
+	} else if os.Args[1] != "init" {
+		if err := refs.CheckForMergeState(); err != nil {
+			fmt.Printf("fatal: failed to checked if in merge state: %s\n", err.Error())
+			os.Exit(1)
+		}
+
 	}
 
 	// Handle subcommands
