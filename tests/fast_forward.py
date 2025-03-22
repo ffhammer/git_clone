@@ -1,29 +1,33 @@
-from utils import TestDir, run_command
+from utils import TestDir
 
 # Initialize test environment
 test_dir = TestDir()
 
 # Run GVC commands inside the test directory
-run_command("init", cwd=test_dir.path)
-run_command("set --set User=name", cwd=test_dir.path)
-run_command("set --set LogLevel=DEBUGGING", cwd=test_dir.path)
+test_dir.run_command("init")
+test_dir.run_command("set --set User=name")
+test_dir.run_command("set --set LogLevel=DEBUGGING")
 
 # Create and track a file
 test_dir.write_file("a.py", "some bs")
-run_command("status", cwd=test_dir.path)
-run_command("add a.py", cwd=test_dir.path)
-run_command('commit -m "first commit"', cwd=test_dir.path)
+test_dir.write_file("b.py", "some bs")
+test_dir.run_command("status")
+test_dir.run_command("add a.py b.py")
+test_dir.run_command('commit -m "first commit"')
 
 # Create a new branch and modify the file
-run_command("checkout -b new", cwd=test_dir.path)
+test_dir.run_command("checkout -b new")
 test_dir.write_file("a.py", "changed")
-run_command("add a.py", cwd=test_dir.path)
-run_command('commit -m "save changes to a"', cwd=test_dir.path)
+test_dir.write_file("c.py", "new")
+test_dir.run_command("add a.py c.py")
+test_dir.run_command("rm b.py")
+test_dir.run_command('commit -m "save changes to a"')
 
 # Checkout main and merge the new branch
-run_command("checkout main", cwd=test_dir.path)
-run_command("merge new", cwd=test_dir.path)
+test_dir.run_command("checkout main")
+test_dir.run_command("merge new")
 test_dir.print_file(".gvc/.log")
+test_dir.print_files()
 
 
 # Clean up after test

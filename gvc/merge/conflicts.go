@@ -47,7 +47,7 @@ func findMergeConflicts(mapA, mapB treediff.ChangeMap) []refs.MergeConflict {
 		}
 
 		// Otherwise, it's a conflict
-		logging.WarnF("Conflict detected for '%s'", relPath)
+		logging.DebugF("Conflict detected for '%s'", relPath)
 		conflicts = append(conflicts, refs.MergeConflict{
 			RelPath:  relPath,
 			ActionA:  changeA.Action,

@@ -15,21 +15,32 @@ import (
 const (
 	rightArrows = ">>>>>>>>>>>>>"
 	leftArrows  = "<<<<<<<<<<<<<"
+	connection  = "============="
 )
 
+func retrieveFile(relPath, hash string) (string, error) {
+	if hash == config.DOES_NOT_EXIST_HASH {
+		return "", nil
+	}
+	f, err := objectio.RetrieveFile(hash)
+	if err != nil {
+		return "", fmt.Errorf("error creating conflict file: could not load '%s' with hash '%s': %w", relPath, hash, err)
+	}
+	return f, nil
+}
+
 func createConflictFile(relPath, hashA, hashB, currentBranchName, sourceBranchName string) error {
-	if hashA == config.DOES_NOT_EXIST_HASH || hashB == config.DOES_NOT_EXIST_HASH {
-		return errors.New("logic error: one of the files does not exist for conflict resolution")
+	if hashA == config.DOES_NOT_EXIST_HASH && hashB == config.DOES_NOT_EXIST_HASH {
+		return errors.New("logic error: both of the files does not exist for conflict resolution")
+	}
+	fileA, err := retrieveFile(relPath, hashA)
+	if err != nil {
+		return err
 	}
 
-	fileA, err := objectio.RetrieveFile(hashA)
+	fileB, err := retrieveFile(relPath, hashB)
 	if err != nil {
-		return fmt.Errorf("error creating conflict file: could not load '%s' with hash '%s': %w", relPath, hashA, err)
-	}
-
-	fileB, err := objectio.RetrieveFile(hashB)
-	if err != nil {
-		return fmt.Errorf("error creating conflict file: could not load '%s' with hash '%s': %w", relPath, hashB, err)
+		return err
 	}
 
 	linesA := utils.SplitLines(fileA)
@@ -52,17 +63,34 @@ func createConflictFile(relPath, hashA, hashB, currentBranchName, sourceBranchNa
 		}
 
 		if currentChange == diffalgos.Insert {
-			builder.WriteString(fmt.Sprintf("%s %s\n", rightArrows, sourceBranchName))
+
+			modified := startIndex-1 >= 0 && diffs[startIndex-1].Action == diffalgos.Delete
+			if !modified {
+				builder.WriteString(fmt.Sprintf("%s %s\n", rightArrows, sourceBranchName))
+			}
+
 			for _, d := range diffs[startIndex:endIndex] {
 				builder.WriteString(linesB[d.NewLineNumber] + "\n")
 			}
+
+			if modified {
+				builder.WriteString(fmt.Sprintf("%s %s\n", leftArrows, sourceBranchName))
+			} else {
+				builder.WriteString(fmt.Sprintf("%s\n", leftArrows))
+			}
+
 		} else {
 			builder.WriteString(fmt.Sprintf("%s %s\n", rightArrows, currentBranchName))
 			for _, d := range diffs[startIndex:endIndex] {
 				builder.WriteString(linesA[d.OldLineNumber] + "\n")
 			}
+
+			if endIndex < len(diffs) && currentChange == diffalgos.Delete && diffs[endIndex].Action == diffalgos.Insert {
+				builder.WriteString(fmt.Sprintf("%s %s\n", connection, sourceBranchName))
+			} else {
+				builder.WriteString(fmt.Sprintf("%s\n", leftArrows))
+			}
 		}
-		builder.WriteString(fmt.Sprintf("%s\n", leftArrows))
 		startIndex = endIndex
 	}
 

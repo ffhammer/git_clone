@@ -46,9 +46,5 @@ func MergeCommand(inputArgs []string) string {
 
 	logging.InfoF("Starting merge: Merging '%s' into '%s'", branchName, currentBranch)
 
-	if err := merge.Merge(currentBranch, branchName); err != nil {
-		return logging.ErrorF("Merge failed: %v", err).Error()
-	}
-
-	return ""
+	return merge.Merge(currentBranch, branchName)
 }

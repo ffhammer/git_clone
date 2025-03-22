@@ -13,26 +13,28 @@ COLOR_RED = "\033[1;31m"  # Red for stderr (Errors)
 COLOR_YELLOW = "\033[1;33m"  # Yellow for Warnings
 
 
-def run_command(command, cwd=None):
-    """Run a shell command and print formatted output."""
-    print(f"{COLOR_BLUE}> {command}{COLOR_RESET}")  # Command in blue
-
-    result = subprocess.run(
-        [EXECUTABLE_FILE] + command.split(), cwd=cwd, text=True, capture_output=True
-    )
-
-    if result.stdout.strip():
-        print(f"{result.stdout.strip()}{COLOR_RESET}")  # Success output
-    if result.stderr.strip():
-        print(f"{result.stderr.strip()}{COLOR_RESET}")  # Error output
-
-
 class TestDir:
     """Creates a temporary directory for testing GVC commands."""
 
     def __init__(self):
         self.dir = tempfile.TemporaryDirectory()
         self.path = Path(self.dir.name)
+
+    def run_command(self, command):
+        """Run a shell command and print formatted output."""
+        print(f"{COLOR_BLUE}> {command}{COLOR_RESET}")  # Command in blue
+
+        result = subprocess.run(
+            [EXECUTABLE_FILE] + command.split(),
+            cwd=self.path,
+            text=True,
+            capture_output=True,
+        )
+
+        if result.stdout.strip():
+            print(f"{result.stdout.strip()}{COLOR_RESET}")  # Success output
+        if result.stderr.strip():
+            print(f"{result.stderr.strip()}{COLOR_RESET}")  # Error output
 
     def write_file(self, relative_path, content):
         """Write content to a file in the test directory."""
@@ -52,11 +54,18 @@ class TestDir:
                 f"{COLOR_YELLOW}Warning: File {relative_path} does not exist.{COLOR_RESET}"
             )
 
-    def list_files(self):
-        """List files in the test directory."""
-        return [
-            str(p.relative_to(self.path)) for p in self.path.glob("**/*") if p.is_file()
+    def print_files(self):
+        """Print all file contents except in .gvc directory."""
+        files = [
+            p for p in self.path.glob("**/*") if p.is_file() and ".gvc" not in p.parts
         ]
+        for p in files:
+            rel = str(p.relative_to(self.path))
+            header = f"##########{rel}##########"
+            print(header)
+            print(p.read_text())
+            print("-" * len(header))
+            print()
 
     def cleanup(self):
         """Clean up the temporary directory."""
