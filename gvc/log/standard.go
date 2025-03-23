@@ -120,7 +120,7 @@ func StandardLog(patch bool, since, until, author, grep string) (string, error) 
 		}
 
 		builder.WriteString(fmt.Sprintf("%s %s\nAuthor: %s\nDate:   %s\n\n    %s\n\n\n",
-			yellowCommitColor.Sprintf("commit %s", current.CommitMessage),
+			yellowCommitColor.Sprintf("Message %s", hashes[i]),
 			branchchange,
 			current.Author,
 			current.Date,

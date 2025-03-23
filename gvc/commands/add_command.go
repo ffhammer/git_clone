@@ -38,10 +38,14 @@ func addSingleFile(filePath string, force bool) error {
 		if err != nil {
 			return fmt.Errorf("can't check open conflicts: %w", err)
 		}
+		isInOpen := false
 		for _, openConflictPath := range openConflicts {
 			if openConflictPath == relPath {
-				return errors.New("you are currently in the process of a merge, hence you can only add files that are open conflicts. See gvc status for more")
+				isInOpen = true
 			}
+		}
+		if !isInOpen {
+			return errors.New("you are currently in the process of a merge, hence you can only add files that are open conflicts. See gvc status for more")
 		}
 	}
 

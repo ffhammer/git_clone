@@ -131,6 +131,11 @@ test_dir.run_command('commit -m "Commit on main branch"')
 
 test_dir.run_command("merge feature")
 test_dir.run_command("status")
+test_dir.run_command(
+    "add deleted_in_new_modified_in_old both_modified_conflict deleted_in_old_modified_in_new"
+)
+test_dir.run_command("commit -m 'merge done' -u test")
+test_dir.run_command("log", wait_time=1)
 
 verify_results(test_dir)
 test_dir.cleanup()

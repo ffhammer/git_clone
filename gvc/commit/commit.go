@@ -66,6 +66,9 @@ func CalculateNumberOfInsertionsAndDeletions() (int, int, error) {
 }
 
 func Commit(message, author string, callStatusIfNoChanges bool) (string, error) {
+	if len(message) > 0 && (message[0] == '"' || message[0] == '\'') {
+		message = message[1:]
+	}
 	if message == "" {
 		return "", fmt.Errorf("commit message cannot be empty")
 	}

@@ -1,6 +1,7 @@
 import os
 import tempfile
 import subprocess
+import time
 from pathlib import Path
 
 EXECUTABLE_FILE = "/Users/felix/Desktop/gvc"
@@ -20,8 +21,12 @@ class TestDir:
         self.dir = tempfile.TemporaryDirectory()
         self.path = Path(self.dir.name)
 
-    def run_command(self, command):
+    def open_terminal(self) -> None:
+        subprocess.run(["open", "-W", "-a", "Terminal", str(self.path)])
+
+    def run_command(self, command, wait_time: float = 0.0):
         """Run a shell command and print formatted output."""
+        time.sleep(wait_time)
         print(f"{COLOR_BLUE}> {command}{COLOR_RESET}")  # Command in blue
 
         result = subprocess.run(

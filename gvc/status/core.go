@@ -33,7 +33,7 @@ func Status() (string, error) {
 			builder.WriteString("You have handled all merge conflicts, commit now (make this better)")
 		} else {
 			builder.WriteString("You have unmerged paths.\n\t(fix conflicts and run 'git commit')\n\t(use 'git merge --abort' to abort the merge)\n")
-			builder.WriteString(strings.Join(openConflicts, "\n\t"))
+			builder.WriteString("\t" + strings.Join(openConflicts, "\n\t"))
 		}
 		builder.WriteString("\n")
 	}
