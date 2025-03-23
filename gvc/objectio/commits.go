@@ -9,12 +9,13 @@ import (
 )
 
 type CommitMetdata struct {
-	ParentCommitHash string `json:"parent_commit_hash"`
-	BranchName       string `json:"branch_name"`
-	Author           string `json:"author"`
-	CommitMessage    string `json:"commit_message"`
-	Date             string `json:"date"`
-	TreeHash         string `json:"tree_hash"`
+	ParentCommitHash  string `json:"parent_commit_hash"`
+	BranchName        string `json:"branch_name"`
+	Author            string `json:"author"`
+	CommitMessage     string `json:"commit_message"`
+	Date              string `json:"date"`
+	TreeHash          string `json:"tree_hash"`
+	BParentCommitHash string `json:"parent_b_commit_hash"`
 }
 
 func LoadCommit(fileHash string) (CommitMetdata, error) {

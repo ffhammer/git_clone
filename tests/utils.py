@@ -67,6 +67,9 @@ class TestDir:
             print("-" * len(header))
             print()
 
+    def list_specific_dir(self, relative_path) -> list[str]:
+        return print(os.listdir(self.path / relative_path))
+
     def list_dir(self) -> list[str]:
         """Print all file contents except in .gvc directory."""
         files = [

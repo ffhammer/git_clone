@@ -7,7 +7,6 @@ import (
 	"git_clone/gvc/config"
 	"git_clone/gvc/ignorefiles"
 	"git_clone/gvc/index"
-	"git_clone/gvc/merge"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
@@ -35,7 +34,7 @@ func addSingleFile(filePath string, force bool) error {
 	}
 
 	if refs.InMergeState {
-		openConflicts, err := merge.GetOpenConflictFiles()
+		openConflicts, err := index.GetOpenConflictFiles()
 		if err != nil {
 			return fmt.Errorf("can't check open conflicts: %w", err)
 		}

@@ -2,6 +2,7 @@ package merge
 
 import (
 	"fmt"
+	"git_clone/gvc/commit"
 	"git_clone/gvc/config"
 	"git_clone/gvc/index"
 	"git_clone/gvc/logging"
@@ -15,24 +16,30 @@ import (
 )
 
 // fastForwardMerge moves the branch pointer forward when no conflicts exist.
-func fastForwardMerge(targetBranchName, targetBranchHash string) (error, string) {
+func fastForwardMerge(currentBranch, targetBranchName, userName string) (string, error) {
 	logging.Info(fmt.Sprintf("Performing fast-forward merge to '%s'", targetBranchName))
 
 	if err := switching.UpdateWorkingDirToBranch(targetBranchName, "merge"); err != nil {
-		return logging.Error(err), ""
+		return "", logging.Error(err)
 	}
 
 	pathToCurrentPointer := filepath.Join(utils.RepoDir, config.CurrentBranchPointerFile)
-	if err := os.WriteFile(pathToCurrentPointer, []byte(targetBranchHash), os.ModePerm); err != nil {
-		return logging.ErrorF("error updating HEAD pointer %w", err), ""
+	if err := os.WriteFile(pathToCurrentPointer, []byte(targetBranchName), os.ModePerm); err != nil {
+		return "", logging.ErrorF("error updating HEAD pointer %w", err)
+	}
+
+	commitOutput, err := commit.Commit(fmt.Sprintf("Fastforward Merge branch '%s' into %s\n", targetBranchName, currentBranch), userName, false)
+	logging.InfoF("commitOutput:\n%s", commitOutput)
+	if err != nil {
+		return "", err
 	}
 
 	logging.InfoF("Fast-forward merge to '%s' completed successfully", targetBranchName)
-	return nil, fmt.Sprintf("fast-forward merge to '%s' completed successfully", targetBranchName)
+	return fmt.Sprintf("fast-forward merge to '%s' completed successfully\n%s", targetBranchName, commitOutput), nil
 }
 
 // Merge performs a three-way merge between the current branch and source branch.
-func Merge(currentBranch, sourceBranchName string) string {
+func Merge(currentBranch, sourceBranchName, userName string) string {
 
 	if refs.InMergeState {
 		return "Error: can't use merge in open merge state"
@@ -70,7 +77,7 @@ func Merge(currentBranch, sourceBranchName string) string {
 
 	if currentHash == mergeBase {
 		logging.InfoF("Performing fast-forward merge from '%s' to '%s'", sourceBranchName, currentBranch)
-		err, returnMessage := fastForwardMerge(sourceBranchName, sourceBranchHash)
+		returnMessage, err := fastForwardMerge(currentBranch, sourceBranchName, userName)
 		if err != nil {
 			return fmt.Errorf("error: fast forward merge failed with: %w", err).Error()
 		}

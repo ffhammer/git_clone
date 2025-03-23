@@ -3,6 +3,7 @@ package refs
 import (
 	"fmt"
 	"git_clone/gvc/config"
+	"git_clone/gvc/logging"
 	"git_clone/gvc/objectio"
 	"git_clone/gvc/utils"
 	"os"
@@ -15,7 +16,7 @@ type CurrentBranchPointer struct {
 }
 
 func SaveCurrentPointer(metadata CurrentBranchPointer) error {
-
+	logging.DebugF("SaveCurrentPointer: saving current branch pointer '%s'", metadata.BranchName)
 	refsPath := filepath.Join(utils.RepoDir, config.RefsFolder, metadata.BranchName)
 
 	err := os.WriteFile(refsPath, []byte(metadata.ParentCommitHash), 0644)

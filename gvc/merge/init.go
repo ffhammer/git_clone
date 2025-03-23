@@ -126,6 +126,7 @@ func prepareMergeState(mergeConflicts []refs.MergeConflict, currentBranchName, s
 
 	metaData := refs.MergeMetaData{
 		MERGE_HEAD:    sourceBranchHash,
+		CURRENT_HEAD:  sourceBranchHash,
 		MERGE_MESSAGE: message,
 		Conflicts:     mergeConflicts,
 	}

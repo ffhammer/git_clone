@@ -25,6 +25,10 @@ test_dir.run_command('commit -m "save changes to a"')
 
 # Checkout main and merge the new branch
 test_dir.run_command("checkout main")
+test_dir.list_specific_dir(".gvc/refs")
+print(test_dir.read_file(".gvc/refs/main"))
+print(test_dir.read_file(".gvc/HEAD"))
+
 test_dir.run_command("merge new")
 test_dir.print_file(".gvc/.log")
 test_dir.print_files()

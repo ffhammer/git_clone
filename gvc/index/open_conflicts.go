@@ -1,7 +1,6 @@
-package merge
+package index
 
 import (
-	"git_clone/gvc/index"
 	"git_clone/gvc/refs"
 )
 
@@ -12,7 +11,7 @@ func GetOpenConflictFiles() ([]string, error) {
 		return nil, err
 	}
 
-	index, err := index.LoadIndexChanges()
+	index, err := LoadIndexChanges()
 	if err != nil {
 		return nil, err
 	}
