@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"git_clone/gvc/config"
 	"git_clone/gvc/ignorefiles"
 	"git_clone/gvc/index"
+	"git_clone/gvc/merge"
 	"git_clone/gvc/objectio"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 	"os"
 	"path/filepath"
@@ -29,6 +32,18 @@ func addSingleFile(filePath string, force bool) error {
 
 	if ignorefiles.IsIgnored(relPath) && !force {
 		return fmt.Errorf("file %s is ignored. Use add -f to force it", filePath)
+	}
+
+	if refs.InMergeState {
+		openConflicts, err := merge.GetOpenConflictFiles()
+		if err != nil {
+			return fmt.Errorf("can't check open conflicts: %w", err)
+		}
+		for _, openConflictPath := range openConflicts {
+			if openConflictPath == relPath {
+				return errors.New("you are currently in the process of a merge, hence you can only add files that are open conflicts. See gvc status for more")
+			}
+		}
 	}
 
 	fileHash, err := utils.GetFileSHA1(filePath)
