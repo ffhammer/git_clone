@@ -6,6 +6,7 @@ import (
 	"git_clone/gvc/config"
 	"git_clone/gvc/diff"
 	"git_clone/gvc/objectio"
+	"git_clone/gvc/refs"
 	"git_clone/gvc/utils"
 	"os"
 )
@@ -24,6 +25,10 @@ func DiffCommand(inputArgs []string) string {
 	// Ensure mutually exclusive flags
 	if *noIndex && *cached {
 		return "Invalid args: cannot use --no-index and --cached together"
+	}
+
+	if refs.InMergeState {
+		return "Error: can't use diff in open merge state"
 	}
 
 	// Determine mode

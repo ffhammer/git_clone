@@ -86,6 +86,10 @@ func RMCommand(args []string) string {
 		return "Error: expected file paths to rm."
 	}
 
+	if refs.InMergeState {
+		return "Error: can't rm in open merge state"
+	}
+
 	var output strings.Builder
 	for _, filePath := range rmCmd.Args() {
 		newOutput, err := RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)

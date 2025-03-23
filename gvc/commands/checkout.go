@@ -32,7 +32,7 @@ func CheckoutCommand(inputArgs []string) string {
 	branchName := args[0]
 
 	if refs.InMergeState {
-		return "error: you are currently in a merge"
+		return "Error: can't use checkout in open merge state"
 	}
 
 	if branchName == currentBranch {

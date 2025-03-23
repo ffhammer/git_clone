@@ -33,6 +33,11 @@ func fastForwardMerge(targetBranchName, targetBranchHash string) (error, string)
 
 // Merge performs a three-way merge between the current branch and source branch.
 func Merge(currentBranch, sourceBranchName string) string {
+
+	if refs.InMergeState {
+		return "Error: can't use merge in open merge state"
+	}
+
 	logging.InfoF("Starting merge process from '%s' into '%s'", sourceBranchName, currentBranch)
 
 	// Check for uncommitted changes
