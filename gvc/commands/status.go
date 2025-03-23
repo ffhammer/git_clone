@@ -3,6 +3,8 @@ package commands
 import (
 	"fmt"
 	"git_clone/gvc/index"
+	"git_clone/gvc/logging"
+	"git_clone/gvc/merge"
 	"git_clone/gvc/refs"
 	"git_clone/gvc/treebuild"
 	"git_clone/gvc/treediff"
@@ -23,12 +25,19 @@ func status() (string, error) {
 
 	if refs.InMergeState {
 
-		mergeMetaData, err := refs.GetMergeMetaData()
+		openConflicts, err := merge.GetOpenConflictFiles()
 		if err != nil {
-			return "", err
+			return "", logging.Error(err)
 		}
-		messages = append(messages, "You have unmerged paths.\n\t(fix conflicts and run 'git commit')\n\t(use 'git merge --abort' to abort the merge)")
-		messages = append(messages, mergeMetaData.MERGE_MESSAGE)
+
+		if len(openConflicts) == 0 {
+			messages = append(messages, "You have handled all merge conflicts, commit now (make this better)")
+		} else {
+			messages = append(messages, "You have unmerged paths.\n\t(fix conflicts and run 'git commit')\n\t(use 'git merge --abort' to abort the merge)")
+
+			messages = append(messages, strings.Join(openConflicts, "\n\t"))
+		}
+
 	}
 
 	changes, err := index.LoadIndexChanges()
