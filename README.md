@@ -2,4 +2,6 @@ Hobby project to reimplement the key implementations of git in go, probably horr
 code quality.
 
 
-left: restore while diff
+left: 
+
+help

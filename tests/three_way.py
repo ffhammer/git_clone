@@ -142,8 +142,10 @@ test_dir.run_command("restore -staged both_modified_identical")
 test_dir.run_command("restore -staged both_modified_conflict")
 test_dir.print_file("both_modified_conflict")
 test_dir.run_command("status")
+
+test_dir.run_command("add both_modified_conflict")
 test_dir.run_command("commit -m 'merge done' -u test")
-test_dir.run_command("log", wait_time=1)
+test_dir.run_command("log -patch", wait_time=1)
 
 # verify_results(test_dir)
 test_dir.print_file(".gvc/.log")

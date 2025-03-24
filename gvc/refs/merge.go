@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"git_clone/gvc/config"
+	"git_clone/gvc/logging"
 	"git_clone/gvc/treediff"
 	"git_clone/gvc/utils"
 	"os"
@@ -71,17 +72,37 @@ func SaveMergeMetaData(data MergeMetaData) error {
 	return nil
 }
 
+func GetConflictFileHash(relPath string) (string, error) {
+	if !InMergeState {
+		return "", logging.NewError("GetConflictFileHasH: called while not in merge state")
+	}
+
+	metadata, err := GetMergeMetaData()
+	if err != nil {
+		return "", nil
+	}
+
+	for idx, conflict := range metadata.Conflicts {
+		if relPath == conflict.RelPath {
+			return metadata.ConflictHashes[idx], nil
+		}
+	}
+
+	return "", logging.ErrorF("file '%s' is not a merge conflict. see 'gvc status' for more", relPath)
+
+}
+
 func GetMergeMetaData() (MergeMetaData, error) {
 	path := filepath.Join(utils.RepoDir, config.MERGE_INFO_PATH)
 	byites, err := os.ReadFile(path)
 	if err != nil {
-		return MergeMetaData{}, fmt.Errorf("error while loading merge meta data from '%s': %w", path, err)
+		return MergeMetaData{}, logging.ErrorF("error while loading merge meta data from '%s': %w", path, err)
 	}
 
 	data := MergeMetaData{}
 	err = json.Unmarshal(byites, &data)
 	if err != nil {
-		return MergeMetaData{}, fmt.Errorf("error while loading merge meta data from '%s': json unmarshal %w", path, err)
+		return MergeMetaData{}, logging.ErrorF("error while loading merge meta data from '%s': json unmarshal %w", path, err)
 	}
 
 	return data, nil

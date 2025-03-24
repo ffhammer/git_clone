@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"git_clone/gvc/config"
@@ -34,18 +33,9 @@ func addSingleFile(filePath string, force bool) error {
 	}
 
 	if refs.InMergeState {
-		openConflicts, err := index.GetOpenConflictFiles()
+		_, err := refs.GetConflictFileHash(relPath)
 		if err != nil {
 			return fmt.Errorf("can't check open conflicts: %w", err)
-		}
-		isInOpen := false
-		for _, openConflictPath := range openConflicts {
-			if openConflictPath == relPath {
-				isInOpen = true
-			}
-		}
-		if !isInOpen {
-			return errors.New("you are currently in the process of a merge, hence you can only add files that are open conflicts. See gvc status for more")
 		}
 	}
 

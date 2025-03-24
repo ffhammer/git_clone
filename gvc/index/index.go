@@ -43,9 +43,19 @@ func AddFile(relPath, fileHash string) error {
 		return err
 	}
 
-	status, oldHash, err := partOfLastCommit(relPath, fileHash)
-	if err != nil {
-		return err
+	var status fileStatus
+	var oldHash string
+	if !refs.InMergeState {
+		status, oldHash, err = partOfLastCommit(relPath, fileHash)
+		if err != nil {
+			return err
+		}
+	} else {
+		status = MODIFIED_FILE
+		oldHash, err = refs.GetConflictFileHash(relPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	var newEntry treediff.ChangeEntry
