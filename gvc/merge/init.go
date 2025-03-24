@@ -29,18 +29,18 @@ func retrieveFile(relPath, hash string) (string, error) {
 	return f, nil
 }
 
-func createConflictFile(relPath, hashA, hashB, currentBranchName, sourceBranchName string) error {
+func createConflictFile(relPath, hashA, hashB, currentBranchName, sourceBranchName string) (string, error) {
 	if hashA == config.DOES_NOT_EXIST_HASH && hashB == config.DOES_NOT_EXIST_HASH {
-		return errors.New("logic error: both of the files does not exist for conflict resolution")
+		return "", errors.New("logic error: both of the files does not exist for conflict resolution")
 	}
 	fileA, err := retrieveFile(relPath, hashA)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	fileB, err := retrieveFile(relPath, hashB)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	linesA := utils.SplitLines(fileA)
@@ -96,10 +96,21 @@ func createConflictFile(relPath, hashA, hashB, currentBranchName, sourceBranchNa
 
 	absPath := utils.RelPathToAbs(relPath)
 	if err := os.WriteFile(absPath, []byte(builder.String()), os.ModePerm); err != nil {
-		return fmt.Errorf("could not write merge file for %s: %w", relPath, err)
+		return "", fmt.Errorf("could not write merge file for %s: %w", relPath, err)
 	}
 
-	return nil
+	fileHash, err := utils.GetFileSHA1(absPath)
+	if err != nil {
+		return "", fmt.Errorf("can't add file %s to objects because %w", absPath, err)
+
+	}
+
+	err = objectio.AddFileToObjects(absPath, fileHash)
+	if err != nil {
+		return "", fmt.Errorf("can't add file %s to objects because %w", absPath, err)
+	}
+
+	return fileHash, nil
 }
 
 func createMergeMessage(mergeConflicts []refs.MergeConflict, currentBranchName, sourceBranchHash, sourceBranchName string) (string, error) {
@@ -124,21 +135,24 @@ func prepareMergeState(mergeConflicts []refs.MergeConflict, currentBranchName, s
 		return fmt.Errorf("initializing merge state failed: error creating merge message: %w", err)
 	}
 
+	conflictFileHashes := make([]string, len(mergeConflicts))
+	for idx, conflict := range mergeConflicts {
+		if hash, err := createConflictFile(conflict.RelPath, conflict.NewHashA, conflict.NewHashB, currentBranchName, sourceBranchName); err != nil {
+			return fmt.Errorf("initializing merge state failed: error creating conflict file for '%s': %w", conflict.RelPath, err)
+		} else {
+			conflictFileHashes[idx] = hash
+		}
+	}
 	metaData := refs.MergeMetaData{
-		MERGE_HEAD:    sourceBranchHash,
-		CURRENT_HEAD:  sourceBranchHash,
-		MERGE_MESSAGE: message,
-		Conflicts:     mergeConflicts,
+		MERGE_HEAD:     sourceBranchHash,
+		CURRENT_HEAD:   sourceBranchHash,
+		MERGE_MESSAGE:  message,
+		Conflicts:      mergeConflicts,
+		ConflictHashes: conflictFileHashes,
 	}
 
 	if err := refs.SaveMergeMetaData(metaData); err != nil {
 		return err
-	}
-
-	for _, conflict := range mergeConflicts {
-		if err := createConflictFile(conflict.RelPath, conflict.NewHashA, conflict.NewHashB, currentBranchName, sourceBranchName); err != nil {
-			return fmt.Errorf("initializing merge state failed: error creating conflict file for '%s': %w", conflict.RelPath, err)
-		}
 	}
 
 	return nil

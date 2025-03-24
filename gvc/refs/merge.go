@@ -47,10 +47,11 @@ type MergeConflict struct {
 }
 
 type MergeMetaData struct {
-	MERGE_HEAD    string `json:"MERGE_HEAD"`
-	CURRENT_HEAD  string `json:"CURRENT_HEAD"`
-	MERGE_MESSAGE string `json:"MERGE_MESSAGE"`
-	Conflicts     []MergeConflict
+	MERGE_HEAD     string `json:"MERGE_HEAD"`
+	CURRENT_HEAD   string `json:"CURRENT_HEAD"`
+	MERGE_MESSAGE  string `json:"MERGE_MESSAGE"`
+	Conflicts      []MergeConflict
+	ConflictHashes []string `json:"ConflictHashes"`
 }
 
 func SaveMergeMetaData(data MergeMetaData) error {
