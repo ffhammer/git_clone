@@ -2,7 +2,7 @@ import os
 import subprocess
 
 EXECUTABLE_FILE = "/Users/felix/Desktop/gvc"
-SAVE_TO = "command_infos.md"
+SAVE_TO = "command_infos.txt"
 
 
 def run_command(command: str) -> str:
@@ -37,5 +37,7 @@ commands = [
 with open(SAVE_TO, "w") as f:
     for cmd in commands:
         help_text = run_command(f"{cmd} -h")
-        f.write(f"### {cmd}\n\n")
+        f.write("-" * 100 + "\n")
+        f.write(f"{cmd}:\n")
+        f.write("-" * 100 + "\n")
         f.write(help_text + "\n\n")
