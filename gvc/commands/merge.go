@@ -12,10 +12,18 @@ import (
 
 func MergeCommand(inputArgs []string) string {
 	flagset := flag.NewFlagSet("merge", flag.ExitOnError)
+	help := flagset.Bool("help", false, "Get help documentation")
+	helpShort := flagset.Bool("h", false, "Get help documentation")
 	commitUser := flagset.String("u", "", "The commit user")
 
 	if err := flagset.Parse(inputArgs); err != nil {
 		return logging.ErrorF("Error parsing merge command arguments: %v", err).Error()
+	}
+	if *help || *helpShort {
+		return "gvc merge [options] <branch>\n" +
+			"Merge the specified branch into the current branch.\n\n" +
+			"Options:\n" +
+			"  -u <user>   Specify commit user (overrides config setting)"
 	}
 
 	cfg, err := settings.LoadSettings()

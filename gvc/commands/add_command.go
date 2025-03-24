@@ -78,17 +78,28 @@ func AddFiles(filePath string, force bool) string {
 
 func AddCommand(args []string) string {
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	force := addCmd.Bool("f", false, "Force adding the file even if it is ignored")
-	addCmd.Parse(args)
+	help := addCmd.Bool("help", false, "Get help documentation")
+	helpShort := addCmd.Bool("h", false, "Get help documentation")
+	force := addCmd.Bool("f", false, "Force adding files even if they are ignored in .gvcignore")
+	if err := addCmd.Parse(args); err != nil {
+		return fmt.Errorf("error parsing arguments: %w", err).Error()
+	}
+	if *help || *helpShort {
+		return "gvc add [options] <path>\n" +
+			"  <path> can be:\n" +
+			"    - a direct path to a single file\n" +
+			"    - a directory path (adds all non-ignored files in that dir)\n" +
+			"    - a glob pattern (adds all matching non-ignored files)\n" +
+			"Options:\n" +
+			"  -f    Force adding files even if they are ignored in .gvcignore"
+	}
 	if len(addCmd.Args()) < 1 {
 		fmt.Println("Error: expected file paths to add.")
 		addCmd.Usage()
 		os.Exit(1)
 	}
 	output := ""
-
 	for _, filePath := range addCmd.Args() {
-
 		if res := AddFiles(filePath, *force); res != "" {
 			return res
 		}

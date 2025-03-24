@@ -10,10 +10,18 @@ import (
 func CheckoutCommand(inputArgs []string) string {
 
 	flagset := flag.NewFlagSet("checkout", flag.ExitOnError)
-	bFlag := flagset.Bool("b", false, "create new branch")
+	help := flagset.Bool("help", false, "Get help documentation")
+	helpShort := flagset.Bool("h", false, "Get help documentation")
+	bFlag := flagset.Bool("b", false, "Create a new branch before switching to it")
 
 	if err := flagset.Parse(inputArgs); err != nil {
 		return err.Error()
+	}
+	if *help || *helpShort {
+		return "gvc checkout [options] <branch>\n" +
+			"Switch branches or restore working tree.\n\n" +
+			"Options:\n" +
+			"  -b        Create the branch before switching to it"
 	}
 
 	args := flagset.Args()

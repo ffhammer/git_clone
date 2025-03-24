@@ -12,11 +12,21 @@ import (
 // Main usage information
 func getGlobalHelp() string {
 	output := "Usage:\n"
-	output += "  gvc <command> [options]\n"
-	output += "\nCommands:\n"
-	output += "  init       Initialize a new repository\n"
-	output += "  add        Add files to the staging area\n"
-	output += "\nUse 'gvc <command> -h' for more information about a command.\n"
+	output += "  gvc <command> [options]\n\n"
+	output += "Commands:\n"
+	output += "  init       Initialize a new repository              [gvc init -h]\n"
+	output += "  add        Add files to the staging area            [gvc add -h]\n"
+	output += "  rm         Remove files from the index/worktree     [gvc rm -h]\n"
+	output += "  commit     Commit staged changes                    [gvc commit -h]\n"
+	output += "  status     Show working tree and index state        [gvc status -h]\n"
+	output += "  restore    Restore file content or index            [gvc restore -h]\n"
+	output += "  diff       Show differences between states          [gvc diff -h]\n"
+	output += "  log        Show commit logs                         [gvc log -h]\n"
+	output += "  branch     Create/delete/list branches              [gvc branch -h]\n"
+	output += "  checkout   Switch branches                          [gvc checkout -h]\n"
+	output += "  merge      Merge another branch into current        [gvc merge -h]\n"
+	output += "  set        View or change config settings           [gvc set -h]\n"
+	output += "\nUse 'gvc <command> -h' for detailed help on a command.\n"
 	return output
 }
 
@@ -42,15 +52,15 @@ func main() {
 	var output string
 	switch os.Args[1] {
 	case "init":
-		output = commands.InitGVC()
+		output = commands.InitGVC(os.Args[2:])
 	case "add":
 		output = commands.AddCommand(os.Args[2:])
 	case "rm":
 		output = commands.RMCommand(os.Args[2:])
 	case "commit":
-		output = commands.Commit()
+		output = commands.Commit(os.Args[2:])
 	case "status":
-		output = commands.Status()
+		output = commands.Status(os.Args[2:])
 	case "restore":
 		output = commands.Restore(os.Args[2:])
 	case "diff":

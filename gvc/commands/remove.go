@@ -77,11 +77,25 @@ func RemoveFile(filePath string, cached, recursive, force bool) (string, error) 
 
 func RMCommand(args []string) string {
 	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
-	rmChached := rmCmd.Bool("cached", false, "Only deletes file from .gvc not the actual file")
-	rmRecursive := rmCmd.Bool("r", false, "")
-	rmForce := rmCmd.Bool("f", false, "")
+	help := rmCmd.Bool("help", false, "Get help documentation")
+	helpShort := rmCmd.Bool("h", false, "Get help documentation")
+	rmCached := rmCmd.Bool("cached", false, "Only remove from index, not filesystem")
+	rmRecursive := rmCmd.Bool("r", false, "Recursively remove files in directories")
+	rmForce := rmCmd.Bool("f", false, "Force removal even if file is staged")
 
-	rmCmd.Parse(os.Args[2:])
+	if err := rmCmd.Parse(args); err != nil {
+		return fmt.Errorf("error parsing arguments: %w", err).Error()
+	}
+	if *help || *helpShort {
+		return "gvc rm [options] <path>...\n" +
+			"Removes file(s) from the working tree and/or the index.\n\n" +
+			"Options:\n" +
+			"  --cached   Only remove from index, keep file in working dir\n" +
+			"  -f         Force removal, even if file is staged or ignored\n" +
+			"  -r         Allow recursive removal of directories"
+	}
+
+	rmCmd.Parse(args)
 	if len(rmCmd.Args()) < 1 {
 		return "Error: expected file paths to rm."
 	}
@@ -92,7 +106,7 @@ func RMCommand(args []string) string {
 
 	var output strings.Builder
 	for _, filePath := range rmCmd.Args() {
-		newOutput, err := RemoveFile(filePath, *rmChached, *rmRecursive, *rmForce)
+		newOutput, err := RemoveFile(filePath, *rmCached, *rmRecursive, *rmForce)
 		if err != nil {
 			return fmt.Sprintf("error for file '%s': %v", filePath, err)
 		}

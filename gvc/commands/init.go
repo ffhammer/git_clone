@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"flag"
 	"fmt"
 	"git_clone/gvc/config"
+	"git_clone/gvc/logging"
 	"git_clone/gvc/refs"
 	"git_clone/gvc/settings"
 	"git_clone/gvc/utils"
@@ -11,7 +13,23 @@ import (
 	"path/filepath"
 )
 
-func InitGVC() string {
+func InitGVC(inputArgs []string) string {
+	flagSet := flag.NewFlagSet("init", flag.ExitOnError)
+	help := flagSet.Bool("help", false, "Get Help Documentaion")
+	help_short := flagSet.Bool("h", false, "Get Help Documentaion")
+
+	if err := flagSet.Parse(inputArgs); err != nil {
+		return fmt.Errorf("error parsing arguments: %w", err).Error()
+	}
+
+	args := flagSet.Args()
+	if len(args) > 0 {
+		return logging.NewError("gvc init expects no args").Error()
+	}
+	if *help || *help_short {
+		return "gvc init\ninitialize a new .gvc in the working directory.\nFails if already exists"
+	}
+
 	// Check if the repository already exists
 	err := utils.FindRepo()
 	if err == nil {

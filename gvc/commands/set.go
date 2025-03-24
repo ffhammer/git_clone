@@ -28,11 +28,20 @@ func setSetting(input string) error {
 
 func SettingsCommand(inputArgs []string) string {
 	flagset := flag.NewFlagSet("settings", flag.ExitOnError)
-	isSet := flagset.Bool("set", false, "set new value. Must provide key=value")
-	isList := flagset.Bool("list", false, "list settings")
+	help := flagset.Bool("help", false, "Get help documentation")
+	helpShort := flagset.Bool("h", false, "Get help documentation")
+	isSet := flagset.Bool("set", false, "Set a new value. Requires key=value")
+	isList := flagset.Bool("list", false, "List current settings")
 
 	if err := flagset.Parse(inputArgs); err != nil {
 		return fmt.Errorf("error parsing args: %w", err).Error()
+	}
+	if *help || *helpShort {
+		return "gvc set [--list | --set key=value]\n" +
+			"View or update GVC settings.\n\n" +
+			"Options:\n" +
+			"  --list           List current settings\n" +
+			"  --set key=value  Set a setting value (e.g. --set User=felix)"
 	}
 
 	// Ensure that exactly one option is provided.

@@ -13,11 +13,25 @@ import (
 
 func DiffCommand(inputArgs []string) string {
 	flagSet := flag.NewFlagSet("diff", flag.ExitOnError)
+	help := flagSet.Bool("help", false, "Get help documentation")
+	helpShort := flagSet.Bool("h", false, "Get help documentation")
 	noIndex := flagSet.Bool("no-index", false, "Compare files on hard drive")
 	cached := flagSet.Bool("cached", false, "Compare staged changes to commit")
 
 	if err := flagSet.Parse(inputArgs); err != nil {
 		return fmt.Errorf("error parsing arguments: %w", err).Error()
+	}
+
+	if *help || *helpShort {
+		return "gvc diff [options] [args]\n" +
+			"Show changes between commits, index, and working tree.\n\n" +
+			"Modes:\n" +
+			"  --cached       Diff index vs HEAD (staged changes)\n" +
+			"  --no-index     Diff two files directly (bypasses index)\n" +
+			"  <commit>       Diff commit vs working tree\n" +
+			"  <c1> <c2>      Diff two commits\n" +
+			"  (default)      Diff working tree vs index\n\n" +
+			"Note: --cached and --no-index are mutually exclusive."
 	}
 
 	args := flagSet.Args()
